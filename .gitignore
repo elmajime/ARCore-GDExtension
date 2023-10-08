@@ -14,6 +14,7 @@ captures/
 .cxx/
 *.apk
 output.json
+*.os
 
 # IntelliJ
 *.iml
@@ -34,3 +35,14 @@ google-services.json
 
 # Virtual env
 .venv
+
+# CPP generated objets
+*x86_64.obj
+*x86_64.dll
+*x86_64.lib
+*x86_64.exp
+*arm64.so
+*.TMP
+
+# Demo editor files
+demo/.godot/

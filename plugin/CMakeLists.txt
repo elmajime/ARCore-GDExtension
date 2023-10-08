@@ -65,7 +65,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # TODO: Update cmake project's name.
-project(ARCoreGDExtension LANGUAGES CXX)
+project(MCTTestGDExtension LANGUAGES CXX)
 
 set(GODOT_COMPILE_FLAGS)
 set(GODOT_LINKER_FLAGS)

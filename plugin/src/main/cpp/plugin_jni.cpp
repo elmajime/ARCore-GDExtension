@@ -1,18 +1,22 @@
-#include <jni.h>
+#ifndef _WIN32
 
-#include <godot_cpp/variant/utility_functions.hpp>
+    #include <jni.h>
 
-#include "utils.h"
+    #include <godot_cpp/variant/utility_functions.hpp>
 
-#undef JNI_PACKAGE_NAME
-// TODO: Update to match plugin's package name
-#define JNI_PACKAGE_NAME org_godotengine_plugin_android_gdextension_arcore
+    #include "utils.h"
 
-#undef JNI_CLASS_NAME
-#define JNI_CLASS_NAME ARCoreGDExtension
+    #undef JNI_PACKAGE_NAME
+    // TODO: Update to match plugin's package name
+    #define JNI_PACKAGE_NAME org_godotengine_plugin_android_gdextension_mcttest
 
-extern "C" {
-    JNIEXPORT void JNICALL JNI_METHOD(helloWorld)(JNIEnv *env, jobject) {
-        godot::UtilityFunctions::print("Hello GDExtension World!");
-    }
-};
+    #undef JNI_CLASS_NAME
+    #define JNI_CLASS_NAME MCTTestGDExtension
+
+    extern "C" {
+        JNIEXPORT void JNICALL JNI_METHOD(helloWorld)(JNIEnv *env, jobject) {
+            godot::UtilityFunctions::print("Hello GDExtension World!");
+        }
+    };
+    
+#endif

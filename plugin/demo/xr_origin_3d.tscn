@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://bberl13y8wr6o"]
+
+[node name="XROrigin3D" type="XROrigin3D"]
+
+[node name="XRCamera3D" type="XRCamera3D" parent="."]

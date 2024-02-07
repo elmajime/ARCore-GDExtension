@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://bwqjflknjtnmo"]
+
+[ext_resource type="Script" path="res://node_3d.gd" id="1_kxuxr"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_qyymm"]
+top_radius = 0.215
+bottom_radius = 0.22
+height = 0.209
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_kxuxr")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.64367, 0.765303, 0, -0.765303, 0.64367, 0, 1.47101, 0)
+
+[node name="GDExample" type="GDExample" parent="."]
+amplitude = 1.0
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8838, 0.972467, 1)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="GDExample"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.161978, -0.742101, -1.68603)
+mesh = SubResource("CylinderMesh_qyymm")
+skeleton = NodePath("../..")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5.16869)

@@ -114,17 +114,33 @@ set_target_properties(${GODOT-CPP} PROPERTIES IMPORTED_LOCATION ${GODOT_CPP_STAT
 
 
 ## Setup the plugin library
-file(GLOB_RECURSE ANDROID_SOURCES ${CMAKE_SOURCE_DIR}/src/main/cpp/*.c**)
+file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/main/cpp/*.c**)
+
+if (ANDROID_PLATFORM)
+    list(REMOVE_ITEM SOURCES ${CMAKE_SOURCE_DIR}/src/main/cpp/arcore_interface_windows.cpp)
+else()
+    list(REMOVE_ITEM SOURCES ${CMAKE_SOURCE_DIR}/src/main/cpp/arcore_interface.cpp)
+endif()
+
 file(GLOB_RECURSE ANDROID_HEADERS ${CMAKE_SOURCE_DIR}/src/main/cpp/*.h**)
 
+message("${SOURCES}")
+
 add_library(${CMAKE_PROJECT_NAME} SHARED
-        ${ANDROID_SOURCES} ${ANDROID_HEADERS}
+        ${SOURCES} ${ANDROID_HEADERS}
         )
 
 target_include_directories(${CMAKE_PROJECT_NAME}
         SYSTEM PUBLIC
         ${GODOT_CPP_INCLUDE_DIRECTORIES}
         )
+
+# Import the ARCore (Google Play Services for AR) library.
+add_library(arcore SHARED IMPORTED)
+set_target_properties(arcore PROPERTIES IMPORTED_LOCATION
+                    "E:/Programs/arcore-android-sdk-1.39.0/samples/hello_ar_c/app/build/arcore-native/jni/arm64-v8a/libarcore_sdk_c.so"
+                      INTERFACE_INCLUDE_DIRECTORIES ${ARCORE_INCLUDE}
+)
 
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
@@ -133,6 +149,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library
         android
         log
+        arcore
         ${GODOT-CPP}
         )
 

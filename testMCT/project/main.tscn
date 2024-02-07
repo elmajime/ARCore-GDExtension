@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://dmx2xuigcpvt4"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_g1dcn"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_khpr0"]
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_g1dcn")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3.8861)
+
+[node name="GDExample" type="Node" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="GDExample"]
+mesh = SubResource("CapsuleMesh_khpr0")
+skeleton = NodePath("../..")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.2865)
+omni_range = 8.60304

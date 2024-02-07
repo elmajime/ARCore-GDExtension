@@ -1,0 +1,110 @@
+#!/usr/bin/env python
+import os
+import sys
+
+env = SConscript("../godot-cpp/SConstruct")
+
+# For the reference:
+# - CCFLAGS are compilation flags shared between C and C++
+# - CFLAGS are for C-specific compilation flags
+# - CXXFLAGS are for C++-specific compilation flags
+# - CPPFLAGS are for pre-processor flags
+# - CPPDEFINES are for pre-processor defines
+# - LINKFLAGS are for linking flags
+
+# tweak this if you want to use different folders, or more folders, to store your source code in.
+env.Append(CPPPATH=[
+                    "src/",
+                    ])
+sources_base = Glob("src/*.cpp")
+
+env["use_hot_reload"] = True
+
+
+sources = []
+if env["platform"] == "windows":
+    ignored = [
+        "wrapper",
+        "android",
+        "plugin_jni",
+        "arcore_plugin_wrapper"
+    ]
+    
+    for f in sources_base:
+        all_ok = True
+        for ig in ignored:
+            if ig in str(f):
+                all_ok = False
+
+        if all_ok:
+            sources.append(f)
+
+    # sources = [item for item in sources_base if not "wrapper" in str(item) ]
+    # sources = [item for item in sources_base if not "android" in str(item) ]
+    # sources = [item for item in sources_base if not "plugin_jni" in str(item) ]
+    # sources = [item for item in sources_base if not "arcore_plugin_wrapper" in str(item) ]
+elif env["platform"] == "android":
+    ignored = [
+        "windows"
+    ]
+    
+    for f in sources_base:
+        all_ok = True
+        for ig in ignored:
+            if ig in str(f):
+                all_ok = False
+
+        if all_ok:
+            sources.append(f)
+    
+    env["LIBS"] = ['liblog', 'libandroid']
+
+    # sources = [item for item in sources_base if not "" in str(item) ]
+    # env.Append(CPPPATH=[
+    #                 # os.environ["ANDROID_NDK_ROOT"] + "/toolchains/llvm/prebuilt/windows-x86_64/include",
+    #                 os.environ["JAVA_HOME"] + "/include",
+    #                 os.environ["JAVA_HOME"] + "/include/win32",
+    #                 # os.environ["ANDROID_NDK_ROOT"] + "/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include",
+    #                 ])
+
+print("tuutu")
+for file in sources:
+    print(str(file))
+
+
+print(os.environ["ANDROID_NDK_ROOT"])
+print("toto")
+# E:\Programs\Android\SDK\ndk\23.2.8568313\toolchains\llvm\prebuilt\windows-x86_64\sysroot\usr\lib\aarch64-linux-android\22
+# E:\Programs\Android\SDK\android-ndk-r25c\toolchains\llvm\prebuilt\windows-x86_64\sysroot\usr\lib\x86_64-linux-android\33
+env["LIBPATH"] = [os.environ["ANDROID_NDK_ROOT"] + "/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/aarch64-linux-android/31/"]
+env["android_api_level"] = 31
+
+# env.Append(CPPFLAGS = ["-Wignored-attributes"])
+
+if env["platform"] == "macos":
+    pass
+    # library = env.SharedLibrary(
+    #     "project/bin/libgdexample.{}.{}.framework/libgdexample.{}.{}".format(
+    #         env["platform"], env["target"], env["platform"], env["target"]
+    #     ),
+    #     source=sources,
+    # )
+elif env["platform"] == "ios":
+    pass
+    # if env["ios_simulator"]:
+    #     library = env.StaticLibrary(
+    #         "project/bin/libgdexample.{}.{}.simulator.a".format(env["platform"], env["target"]),
+    #         source=sources,
+    #     )
+    # else:
+    #     library = env.StaticLibrary(
+    #         "project/bin/libgdexample.{}.{}.a".format(env["platform"], env["target"]),
+    #         source=sources,
+    #     )
+else:
+    library = env.SharedLibrary(
+        "project/addons/TestMCT/bin/libTestMCT{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+        source=sources,
+    )
+
+Default(library)

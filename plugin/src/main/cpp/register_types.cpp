@@ -6,7 +6,9 @@
 #include <godot_cpp/godot.hpp>
 
 #include "arcore_interface.h"
-#include <jni.h>
+#include "gdexample.h"
+
+// #include <jni.h>
 
 using namespace godot;
 
@@ -15,7 +17,9 @@ void initialize_plugin_module(ModuleInitializationLevel p_level) {
     if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) {
         return;
     }
+    ARCoreInterface tutu();
     ClassDB::register_class<ARCoreInterface>();
+    ClassDB::register_class<GDExample>();
 }
 
 void uninitialize_plugin_module(ModuleInitializationLevel p_level) {

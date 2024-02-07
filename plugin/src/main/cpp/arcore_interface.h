@@ -12,8 +12,6 @@
 #include "godot_cpp/classes/camera_feed.hpp"
 #include "godot_cpp/variant/projection.hpp"
 
-#include "include/arcore_c_api.h"
-
 namespace godot {
     class ARCoreInterface : public XRInterfaceExtension {
         GDCLASS(ARCoreInterface, XRInterfaceExtension);
@@ -29,7 +27,7 @@ namespace godot {
         static void _bind_methods();
 
         ARCoreInterface();
-        virtual ~ARCoreInterface();
+        ~ARCoreInterface();
 
         virtual XRInterface::TrackingStatus _get_tracking_status() const override;
 
@@ -66,15 +64,20 @@ namespace godot {
         virtual void notification(int p_what);
 
     private:
+        class Pimpl;
+
+        friend class Pimpl;
+
+        std::unique_ptr<Pimpl> m_pimpl;
+
+    private:
         InitStatus init_status;
 
-        ArSession *ar_session;
-        ArFrame *ar_frame;
         int width;
         int height;
         int display_rotation;
-        uint camera_texture_id;
-        uint last_anchor_id;
+        uint16_t camera_texture_id;
+        uint16_t last_anchor_id;
 
         Ref<CameraFeed> feed;
 
@@ -90,8 +93,6 @@ namespace godot {
         };
 
         TrackingStatus tracking_state;
-
-        std::map<ArPlane *, anchor_map *> anchors;
 
         void make_anchors_stale();
 

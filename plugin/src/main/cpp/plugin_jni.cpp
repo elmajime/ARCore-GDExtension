@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <jni.h>
 
 #include <godot_cpp/variant/utility_functions.hpp>

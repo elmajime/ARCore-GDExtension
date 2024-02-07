@@ -1,138 +1,99 @@
-import com.android.build.gradle.internal.tasks.factory.dependsOn
-
-plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
-}
-
-// TODO: Update value to your plugin's name.
-val pluginName = "ARCoreGDExtension"
-
-// TODO: Update value to match your plugin's package name.
-val pluginPackageName = "org.godotengine.plugin.android.gdextension.arcore"
-
-/**
- * Flag used to specify whether the `plugin.gdextension` config file has libraries for platforms
- * other than Android and can be used by the Godot Editor
+/*
+ * Copyright 2017 Google LLC
  *
- * TODO: Update the flag value based on your plugin's configuration
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-val gdextensionSupportsNonAndroidPlatforms = false
+apply plugin: 'com.android.application'
+
+/*
+The arcore aar library contains the native shared libraries.  These are
+extracted before building to a temporary directory.
+ */
+def arcore_libpath = "${buildDir}/arcore-native"
+
+// Create a configuration to mark which aars to extract .so files from
+configurations { natives }
 
 android {
-    namespace = pluginPackageName
-    compileSdk = 33
-
-    buildFeatures {
-        buildConfig = true
-    }
-
+    compileSdkVersion 33
     defaultConfig {
-        minSdk = 21
+        applicationId "com.google.ar.core.examples.c.helloar"
+
+        // "AR Optional" apps must declare minSdkVersion >= 14.
+        // "AR Required" apps must declare minSdkVersion >= 24.
+        minSdkVersion 24
+        targetSdkVersion 33
+        versionCode 1
+        versionName '1.0'
 
         externalNativeBuild {
             cmake {
-                cppFlags("")
+                cppFlags "-std=c++11", "-Wall"
+                arguments "-DANDROID_STL=c++_static",
+                        "-DARCORE_LIBPATH=${arcore_libpath}/jni",
+                        "-DARCORE_INCLUDE=${project.rootDir}/../../libraries/include",
+                        "-DGLM_INCLUDE=${project.rootDir}/../../third_party/glm"
             }
         }
         ndk {
-            abiFilters.add("arm64-v8a")
+            abiFilters "arm64-v8a", "armeabi-v7a", "x86"
         }
-
-        manifestPlaceholders["godotPluginName"] = pluginName
-        manifestPlaceholders["godotPluginPackageName"] = pluginPackageName
-        buildConfigField("String", "GODOT_PLUGIN_NAME", "\"${pluginName}\"")
-        setProperty("archivesBaseName", pluginName)
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
     }
     externalNativeBuild {
         cmake {
-            path("CMakeLists.txt")
-            version = "3.22.1"
+            path "CMakeLists.txt"
         }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
     }
 }
 
 dependencies {
-    // TODO: Update the godot dep when 4.2 is stable
-    implementation("org.godotengine:godot:4.2.0.dev-SNAPSHOT")
+    // ARCore (Google Play Services for AR) library.
+    implementation 'com.google.ar:core:1.39.0'
+    natives 'com.google.ar:core:1.39.0'
+
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'com.google.android.material:material:1.1.0'
 }
 
-// BUILD TASKS DEFINITION
-val cleanAssetsAddons by tasks.registering(Copy::class) {
-    delete("src/main/assets/addons")
-}
-
-val copyExportScriptsTemplate by tasks.registering(Copy::class) {
-    description = "Copies the export scripts templates to the plugin's addons directory"
-
-    dependsOn(cleanAssetsAddons)
-
-    from("export_scripts_template")
-    into("src/main/assets/addons/$pluginName")
-}
-
-val copyDebugAARToAddons by tasks.registering(Copy::class) {
-    description = "Copies the generated debug AAR binary to the plugin's addons directory"
-    from("build/outputs/aar")
-    include("$pluginName-debug.aar")
-    into("src/main/assets/addons/$pluginName/.bin/debug")
-}
-
-val copyReleaseAARToAddons by tasks.registering(Copy::class) {
-    description = "Copies the generated release AAR binary to the plugin's addons directory"
-    from("build/outputs/aar")
-    include("$pluginName-release.aar")
-    into("src/main/assets/addons/$pluginName/.bin/release")
-}
-
-val copyDebugSharedLibs by tasks.registering(Copy::class) {
-    description = "Copies the generated debug .so shared library to the plugin's addons directory"
-    from("build/intermediates/cmake/debug/obj")
-    into("src/main/assets/addons/$pluginName/.bin/debug")
-}
-
-val copyReleaseSharedLibs by tasks.registering(Copy::class) {
-    description = "Copies the generated release .so shared library to the plugin's addons directory"
-    from("build/intermediates/cmake/release/obj")
-    into("src/main/assets/addons/$pluginName/.bin/release")
-}
-
-val cleanDemoAddons by tasks.registering(Delete::class) {
-    delete("demo/addons/$pluginName")
-}
-
-val copyAddonsToDemo by tasks.registering(Copy::class) {
-    description = "Copies the plugin's output artifact to the output directory"
-
-    dependsOn(cleanDemoAddons)
-    dependsOn(copyDebugAARToAddons)
-    dependsOn(copyReleaseAARToAddons)
-    dependsOn(copyDebugSharedLibs)
-    dependsOn(copyReleaseSharedLibs)
-
-    from("src/main/assets/addons/$pluginName")
-    if (!gdextensionSupportsNonAndroidPlatforms) {
-        exclude("plugin.gdextension")
+// Extracts the shared libraries from aars in the natives configuration.
+// This is done so that NDK builds can access these libraries.
+task extractNativeLibraries() {
+    // Always extract, this insures the native libs are updated if the version changes.
+    outputs.upToDateWhen { false }
+    doFirst {
+        configurations.natives.files.each { f ->
+            copy {
+                from zipTree(f)
+                into arcore_libpath
+                include "jni/**/*"
+            }
+        }
     }
-    into("demo/addons/$pluginName")
 }
 
-tasks.named("preBuild").dependsOn(copyExportScriptsTemplate)
-
-tasks.named("assemble").configure {
-    dependsOn(copyExportScriptsTemplate)
-    finalizedBy(copyAddonsToDemo)
+tasks.whenTaskAdded {
+    task -> if ((task.name.contains("external") || task.name.contains("CMake")) && !task.name.contains("Clean")) {
+        task.dependsOn(extractNativeLibraries)
+    }
 }
 
-tasks.named<Delete>("clean").apply {
-    dependsOn(cleanDemoAddons)
-    dependsOn(cleanAssetsAddons)
-}

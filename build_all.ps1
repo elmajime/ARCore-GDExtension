@@ -1,0 +1,4 @@
+scons platform=android target=template_debug custom_api_file=extension_api.json
+scons platform=android target=template_release custom_api_file=extension_api.json
+scons platform=windows target=template_debug custom_api_file=extension_api.json
+scons platform=windows target=template_release custom_api_file=extension_api.json

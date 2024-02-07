@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Limits app visibility in the Google Play Store to ARCore supported devices
+        (https://developers.google.com/ar/devices). -->
+    (<uses-feature android:name="android.hardware.camera.ar" android:required="true"/>)
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+
     <application>
         <!--
         Plugin metadata:
@@ -15,7 +21,9 @@
         -->
         <meta-data
             android:name="org.godotengine.plugin.v2.${godotPluginName}"
-            android:value="${godotPluginPackageName}.ARCoreGDExtension"/>
+            android:value="${godotPluginPackageName}.ARCoreGDExtension"
+            android:name="com.google.ar.core" android:value="required"/>
+
     </application>
 
 </manifest>

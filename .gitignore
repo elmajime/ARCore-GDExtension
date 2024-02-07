@@ -14,6 +14,7 @@ captures/
 .cxx/
 *.apk
 output.json
+*.os
 
 # IntelliJ
 *.iml
@@ -31,3 +32,27 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Virtual env
+.venv
+
+# CPP generated objets
+*x86_64.obj
+*x86_64.dll
+*x86_64.lib
+*x86_64.exp
+*arm64.so
+*.TMP
+*.dblite
+*.pdb
+
+# Android generated objects
+**/*.apk
+**/*.apk.idsig
+**/android/.build_version
+
+# Demo editor files
+**/.godot/
+
+# IDE files
+.vscode/

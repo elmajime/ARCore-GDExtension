@@ -31,3 +31,13 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Scons
+.sconsign.dblite
+
+# venv
+*.venv
+
+# vscode
+*.vscode
+

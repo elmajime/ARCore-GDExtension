@@ -22,6 +22,21 @@ env["use_hot_reload"] = True
 
 
 sources = []
+# ignored = [
+#     "wrapper",
+#     "android",
+#     "plugin_jni",
+#     "arcore_plugin_wrapper"
+# ]
+
+# for f in sources_base:
+#     all_ok = True
+#     for ig in ignored:
+#         if ig in str(f):
+#             all_ok = False
+
+#     if all_ok:
+#         sources.append(f)
 if env["platform"] == "windows":
     ignored = [
         "wrapper",
@@ -39,10 +54,6 @@ if env["platform"] == "windows":
         if all_ok:
             sources.append(f)
 
-    # sources = [item for item in sources_base if not "wrapper" in str(item) ]
-    # sources = [item for item in sources_base if not "android" in str(item) ]
-    # sources = [item for item in sources_base if not "plugin_jni" in str(item) ]
-    # sources = [item for item in sources_base if not "arcore_plugin_wrapper" in str(item) ]
 elif env["platform"] == "android":
     ignored = [
         "windows"
@@ -57,15 +68,8 @@ elif env["platform"] == "android":
         if all_ok:
             sources.append(f)
     
-    env["LIBS"] = ['liblog', 'libandroid']
+    env["LIBS"] = ['liblog', 'libandroid', 'libarcore']
 
-    # sources = [item for item in sources_base if not "" in str(item) ]
-    # env.Append(CPPPATH=[
-    #                 # os.environ["ANDROID_NDK_ROOT"] + "/toolchains/llvm/prebuilt/windows-x86_64/include",
-    #                 os.environ["JAVA_HOME"] + "/include",
-    #                 os.environ["JAVA_HOME"] + "/include/win32",
-    #                 # os.environ["ANDROID_NDK_ROOT"] + "/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include",
-    #                 ])
 
 print("tuutu")
 for file in sources:

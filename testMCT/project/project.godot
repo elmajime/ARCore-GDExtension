@@ -21,7 +21,7 @@ TestMCT="*res://addons/TestMCT/TestMCT.gd"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/TestMCT/plugin.cfg")
+enabled=PackedStringArray()
 
 [native_extensions]
 

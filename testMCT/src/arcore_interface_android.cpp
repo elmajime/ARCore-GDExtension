@@ -61,20 +61,29 @@ XRInterface::TrackingStatus ARCoreInterface::_get_tracking_status() const {
 }
 
 void ARCoreInterface::_resume() {
+    std::cout<<"godot ARCore: _resume..."<<std::endl;
+    // if (init_status == INITIALISED && m_pimpl->ar_session != nullptr) {
+    //     std::cout<<"godot arcore: init resume"<<std::endl;
+    // }
+
     if (init_status == INITIALISED && m_pimpl->ar_session != nullptr) {
+        std::cout<<"Godot ARCore: initialised and ar_session is not null..."<<std::endl;
+        
         ArStatus status = ArSession_resume(m_pimpl->ar_session);
         if (status != AR_SUCCESS) {
             std::cerr<<"Godot ARCore: Failed to resume."<<std::endl;
 
             // TODO quit? how?
+        } else {
+            std::cout<<"Godot ARCore: AR no error..."<<std::endl;
         }
     }
 }
 
 void ARCoreInterface::_pause() {
-    if (m_pimpl->ar_session != nullptr) {
-        ArSession_pause(m_pimpl->ar_session);
-    }
+    // if (m_pimpl->ar_session != nullptr) {
+    //     ArSession_pause(m_pimpl->ar_session);
+    // }
 }
 
 void ARCoreInterface::notification(int p_what) {
@@ -135,58 +144,58 @@ bool ARCoreInterface::_initialize() {
             }
         }
 
-        if (m_pimpl->ar_session == nullptr) {
-            /* TODO godot::android_api no longer exists, look into alternative and change
-            ALOGV("Godot ARCore: Getting environment");
+        // if (m_pimpl->ar_session == nullptr) {
+        //     /* TODO godot::android_api no longer exists, look into alternative and change
+        //     ALOGV("Godot ARCore: Getting environment");
 
-            // get some android things
-            JNIEnv *env = godot::android_api->godot_android_get_env();
+        //     // get some android things
+        //     JNIEnv *env = godot::android_api->godot_android_get_env();
 
-            jobject context = godot::android_api->godot_android_get_activity();
-            if (context == nullptr) {
-                ALOGE("Godot ARCore: Couldn't get context");
-                init_status = INITIALISE_FAILED; // don't try again.
-                return false;
-            }
+        //     jobject context = godot::android_api->godot_android_get_activity();
+        //     if (context == nullptr) {
+        //         ALOGE("Godot ARCore: Couldn't get context");
+        //         init_status = INITIALISE_FAILED; // don't try again.
+        //         return false;
+        //     }
 
-            ALOGV("Godot ARCore: Create ArSession");
+        //     ALOGV("Godot ARCore: Create ArSession");
 
-            if (ArSession_create(env, context, &m_pimpl->ar_session) != AR_SUCCESS || m_pimpl->ar_session == nullptr) {
-                ALOGE("Godot ARCore: ARCore couldn't be created.");
-                init_status = INITIALISE_FAILED; // don't try again.
-                return false;
-            }
+        //     if (ArSession_create(env, context, &m_pimpl->ar_session) != AR_SUCCESS || m_pimpl->ar_session == nullptr) {
+        //         ALOGE("Godot ARCore: ARCore couldn't be created.");
+        //         init_status = INITIALISE_FAILED; // don't try again.
+        //         return false;
+        //     }
 
-            ALOGV("Godot ARCore: Create ArFrame.");
+        //     ALOGV("Godot ARCore: Create ArFrame.");
 
-            ArFrame_create(m_pimpl->ar_session, &m_pimpl->ar_frame);
-            if (m_pimpl->ar_frame == nullptr) {
-                ALOGE("Godot ARCore: Frame couldn't be created.");
+        //     ArFrame_create(m_pimpl->ar_session, &m_pimpl->ar_frame);
+        //     if (m_pimpl->ar_frame == nullptr) {
+        //         ALOGE("Godot ARCore: Frame couldn't be created.");
 
-                ArSession_destroy(m_pimpl->ar_session);
-                m_pimpl->ar_session = nullptr;
+        //         ArSession_destroy(m_pimpl->ar_session);
+        //         m_pimpl->ar_session = nullptr;
 
-                init_status = INITIALISE_FAILED; // don't try again.
-                return false;
-            }
+        //         init_status = INITIALISE_FAILED; // don't try again.
+        //         return false;
+        //     }
 
-            // Get our size, make sure we have these in portrait
-            Size2 size = DisplayServer::get_singleton()->screen_get_size();
-            if (size.x > size.y) {
-                width = size.y;
-                height = size.x;
-            } else {
-                width = size.x;
-                height = size.y;
-            }
+        //     // Get our size, make sure we have these in portrait
+        //     Size2 size = DisplayServer::get_singleton()->screen_get_size();
+        //     if (size.x > size.y) {
+        //         width = size.y;
+        //         height = size.x;
+        //     } else {
+        //         width = size.x;
+        //         height = size.y;
+        //     }
 
-            // Trigger display rotation
-            display_rotation = -1;
+        //     // Trigger display rotation
+        //     display_rotation = -1;
 
-            ALOGV("Godot ARCore: Initialised.");
-            init_status = INITIALISED;
-            */
-        }
+        //     ALOGV("Godot ARCore: Initialised.");
+        //     init_status = INITIALISED;
+        //     */
+        // }
 
         // and call resume for the first time to complete this
         _resume();
@@ -223,13 +232,13 @@ void ARCoreInterface::_uninitialize() {
         make_anchors_stale();
         remove_stale_anchors();
 
-        if (m_pimpl->ar_session != nullptr) {
-            ArSession_destroy(m_pimpl->ar_session);
-            ArFrame_destroy(m_pimpl->ar_frame);
+        // if (m_pimpl->ar_session != nullptr) {
+        //     ArSession_destroy(m_pimpl->ar_session);
+        //     ArFrame_destroy(m_pimpl->ar_frame);
 
-            m_pimpl->ar_session = nullptr;
-            m_pimpl->ar_frame = nullptr;
-        }
+        //     m_pimpl->ar_session = nullptr;
+        //     m_pimpl->ar_frame = nullptr;
+        // }
 
         if (feed.is_valid()) {
             feed->set_active(false);
@@ -345,35 +354,35 @@ const float kVertices[] = {
 };
 
 void ARCoreInterface::make_anchors_stale() {
-    for (const auto &anchor: m_pimpl->anchors) {
-        anchor.second->stale = true;
-    }
+    // for (const auto &anchor: m_pimpl->anchors) {
+    //     anchor.second->stale = true;
+    // }
 }
 
 void ARCoreInterface::remove_stale_anchors() {
-    for (auto it = m_pimpl->anchors.cbegin(); it != m_pimpl->anchors.cend();) {
-        ArPlane *ar_plane = it->first;
-        anchor_map *am = it->second;
-        if (am->stale) {
-            it = m_pimpl->anchors.erase(it);
+    // for (auto it = m_pimpl->anchors.cbegin(); it != m_pimpl->anchors.cend();) {
+    //     ArPlane *ar_plane = it->first;
+    //     anchor_map *am = it->second;
+    //     if (am->stale) {
+    //         it = m_pimpl->anchors.erase(it);
 
-            XRServer::get_singleton()->remove_tracker(am->tracker);
-            am->tracker.unref();
-            delete am;
-            ArTrackable_release(ArAsTrackable(ar_plane));
-        } else {
-            ++it;
-        }
-    }
+    //         XRServer::get_singleton()->remove_tracker(am->tracker);
+    //         am->tracker.unref();
+    //         delete am;
+    //         ArTrackable_release(ArAsTrackable(ar_plane));
+    //     } else {
+    //         ++it;
+    //     }
+    // }
 }
 
 void ARCoreInterface::_process() {
     if (init_status != INITIALISED) {
         // not yet initialised so....
         return;
-    } else if ((m_pimpl->ar_session == nullptr) || (feed.is_null())) {
-        // don't have a session yet so...
-        return;
+    // } else if ((m_pimpl->ar_session == nullptr) || (feed.is_null())) {
+    //     // don't have a session yet so...
+    //     return;
     }
 
     /* TODO change this, doesn't work this way anymore
@@ -406,20 +415,20 @@ void ARCoreInterface::_process() {
     }
     */
 
-    // Have ARCore grab a camera frame, load it into our texture object and do its funky SLAM logic
-    ArSession_setCameraTextureName(m_pimpl->ar_session, camera_texture_id);
+    // // Have ARCore grab a camera frame, load it into our texture object and do its funky SLAM logic
+    // ArSession_setCameraTextureName(m_pimpl->ar_session, camera_texture_id);
 
-    // Update session to get current frame and render camera background.
-    if (ArSession_update(m_pimpl->ar_session, m_pimpl->ar_frame) != AR_SUCCESS) {
-        std::cerr<<"Godot ARCore: OnDrawFrame ArSession_update error"<<std::endl;
-    }
+    // // Update session to get current frame and render camera background.
+    // if (ArSession_update(m_pimpl->ar_session, m_pimpl->ar_frame) != AR_SUCCESS) {
+    //     std::cerr<<"Godot ARCore: OnDrawFrame ArSession_update error"<<std::endl;
+    // }
 
-    ArCamera *ar_camera;
-    ArFrame_acquireCamera(m_pimpl->ar_session, m_pimpl->ar_frame, &ar_camera);
+    // ArCamera *ar_camera;
+    // ArFrame_acquireCamera(m_pimpl->ar_session, m_pimpl->ar_frame, &ar_camera);
 
-    // process our view matrix
+    // // process our view matrix
     float view_mat[4][4];
-    ArCamera_getViewMatrix(m_pimpl->ar_session, ar_camera, (float *)view_mat);
+    // ArCamera_getViewMatrix(m_pimpl->ar_session, ar_camera, (float *)view_mat);
 
     // TODO: We may need to adjust this based on orientation
     view.basis.rows[0].x = view_mat[0][0];
@@ -445,7 +454,7 @@ void ARCoreInterface::_process() {
 
     // process our projection matrix
     float projection_mat[4][4];
-    ArCamera_getProjectionMatrix(m_pimpl->ar_session, ar_camera, z_near, z_far, (float *)projection_mat);
+    // ArCamera_getProjectionMatrix(m_pimpl->ar_session, ar_camera, z_near, z_far, (float *)projection_mat);
 
     projection[0].x = projection_mat[0][0];
     projection[1].x = projection_mat[1][0];
@@ -464,204 +473,204 @@ void ARCoreInterface::_process() {
     projection[2].w = projection_mat[2][3];
     projection[3].w = projection_mat[3][3];
 
-    ArTrackingState camera_tracking_state;
-    ArCamera_getTrackingState(m_pimpl->ar_session, ar_camera, &camera_tracking_state);
-    switch (camera_tracking_state) {
-        case AR_TRACKING_STATE_TRACKING:
-            tracking_state = XRInterface::XR_NORMAL_TRACKING;
-            break;
-        case AR_TRACKING_STATE_PAUSED:
-            // lets find out why..
-            ArTrackingFailureReason camera_tracking_failure_reason;
-            ArCamera_getTrackingFailureReason(m_pimpl->ar_session, ar_camera, &camera_tracking_failure_reason);
-            switch (camera_tracking_failure_reason) {
-                case AR_TRACKING_FAILURE_REASON_NONE:
-                    tracking_state = XRInterface::XR_UNKNOWN_TRACKING;
-                    break;
-                case AR_TRACKING_FAILURE_REASON_BAD_STATE:
-                    tracking_state = XRInterface::XR_INSUFFICIENT_FEATURES; // @TODO add bad state to XRInterface
-                    break;
-                case AR_TRACKING_FAILURE_REASON_INSUFFICIENT_LIGHT:
-                    tracking_state = XRInterface::XR_INSUFFICIENT_FEATURES; // @TODO add insufficient light to XRInterface
-                    break;
-                case AR_TRACKING_FAILURE_REASON_EXCESSIVE_MOTION:
-                    tracking_state = XRInterface::XR_EXCESSIVE_MOTION;
-                    break;
-                case AR_TRACKING_FAILURE_REASON_INSUFFICIENT_FEATURES:
-                    tracking_state = XRInterface::XR_INSUFFICIENT_FEATURES;
-                    break;
-                case AR_TRACKING_FAILURE_REASON_CAMERA_UNAVAILABLE:
-                    tracking_state = XRInterface::XR_INSUFFICIENT_FEATURES; // @TODO add no camera to XRInterface
-                    break;
-                default:
-                    tracking_state = XRInterface::XR_UNKNOWN_TRACKING;
-                    break;
-            };
+    // ArTrackingState camera_tracking_state;
+    // ArCamera_getTrackingState(m_pimpl->ar_session, ar_camera, &camera_tracking_state);
+    // switch (camera_tracking_state) {
+    //     case AR_TRACKING_STATE_TRACKING:
+    //         tracking_state = XRInterface::XR_NORMAL_TRACKING;
+    //         break;
+    //     case AR_TRACKING_STATE_PAUSED:
+    //         // lets find out why..
+    //         ArTrackingFailureReason camera_tracking_failure_reason;
+    //         ArCamera_getTrackingFailureReason(m_pimpl->ar_session, ar_camera, &camera_tracking_failure_reason);
+    //         switch (camera_tracking_failure_reason) {
+    //             case AR_TRACKING_FAILURE_REASON_NONE:
+    //                 tracking_state = XRInterface::XR_UNKNOWN_TRACKING;
+    //                 break;
+    //             case AR_TRACKING_FAILURE_REASON_BAD_STATE:
+    //                 tracking_state = XRInterface::XR_INSUFFICIENT_FEATURES; // @TODO add bad state to XRInterface
+    //                 break;
+    //             case AR_TRACKING_FAILURE_REASON_INSUFFICIENT_LIGHT:
+    //                 tracking_state = XRInterface::XR_INSUFFICIENT_FEATURES; // @TODO add insufficient light to XRInterface
+    //                 break;
+    //             case AR_TRACKING_FAILURE_REASON_EXCESSIVE_MOTION:
+    //                 tracking_state = XRInterface::XR_EXCESSIVE_MOTION;
+    //                 break;
+    //             case AR_TRACKING_FAILURE_REASON_INSUFFICIENT_FEATURES:
+    //                 tracking_state = XRInterface::XR_INSUFFICIENT_FEATURES;
+    //                 break;
+    //             case AR_TRACKING_FAILURE_REASON_CAMERA_UNAVAILABLE:
+    //                 tracking_state = XRInterface::XR_INSUFFICIENT_FEATURES; // @TODO add no camera to XRInterface
+    //                 break;
+    //             default:
+    //                 tracking_state = XRInterface::XR_UNKNOWN_TRACKING;
+    //                 break;
+    //         };
 
-            break;
-        case AR_TRACKING_STATE_STOPPED:
-            tracking_state = XRInterface::XR_NOT_TRACKING;
-            break;
-        default:
-            tracking_state = XRInterface::XR_UNKNOWN_TRACKING;
-            break;
-    }
+    //         break;
+    //     case AR_TRACKING_STATE_STOPPED:
+    //         tracking_state = XRInterface::XR_NOT_TRACKING;
+    //         break;
+    //     default:
+    //         tracking_state = XRInterface::XR_UNKNOWN_TRACKING;
+    //         break;
+    // }
 
-    ArCamera_release(ar_camera);
+    // ArCamera_release(ar_camera);
 
-    // If display rotation changed (also includes view size change), we need to
-    // re-query the uv coordinates for the on-screen portion of the camera image.
-    int32_t geometry_changed = 0;
+    // // If display rotation changed (also includes view size change), we need to
+    // // re-query the uv coordinates for the on-screen portion of the camera image.
+    // int32_t geometry_changed = 0;
 
-    ArFrame_getDisplayGeometryChanged(m_pimpl->ar_session, m_pimpl->ar_frame, &geometry_changed);
-    if (geometry_changed != 0 || !have_display_transform) {
-        // update our transformed uvs
-        float transformed_uvs[4 * 2];
-        ArFrame_transformCoordinates2d(m_pimpl->ar_session, m_pimpl->ar_frame, AR_COORDINATES_2D_OPENGL_NORMALIZED_DEVICE_COORDINATES, 4, kVertices, AR_COORDINATES_2D_TEXTURE_NORMALIZED, transformed_uvs);
-        have_display_transform = true;
+    // ArFrame_getDisplayGeometryChanged(m_pimpl->ar_session, m_pimpl->ar_frame, &geometry_changed);
+    // if (geometry_changed != 0 || !have_display_transform) {
+    //     // update our transformed uvs
+    //     float transformed_uvs[4 * 2];
+    //     ArFrame_transformCoordinates2d(m_pimpl->ar_session, m_pimpl->ar_frame, AR_COORDINATES_2D_OPENGL_NORMALIZED_DEVICE_COORDINATES, 4, kVertices, AR_COORDINATES_2D_TEXTURE_NORMALIZED, transformed_uvs);
+    //     have_display_transform = true;
 
-        // got to convert these uvs. They seem weird in portrait mode..
-        bool shift_x = false;
-        bool shift_y = false;
+    //     // got to convert these uvs. They seem weird in portrait mode..
+    //     bool shift_x = false;
+    //     bool shift_y = false;
 
-        // -1.0 - 1.0 => 0.0 - 1.0
-        for (int i = 0; i < 8; i += 2) {
-            transformed_uvs[i] = transformed_uvs[i] * 2.0 - 1.0;
-            shift_x = shift_x || (transformed_uvs[i] < -0.001);
-            transformed_uvs[i + 1] = transformed_uvs[i + 1] * 2.0 - 1.0;
-            shift_y = shift_y || (transformed_uvs[i + 1] < -0.001);
-        }
+    //     // -1.0 - 1.0 => 0.0 - 1.0
+    //     for (int i = 0; i < 8; i += 2) {
+    //         transformed_uvs[i] = transformed_uvs[i] * 2.0 - 1.0;
+    //         shift_x = shift_x || (transformed_uvs[i] < -0.001);
+    //         transformed_uvs[i + 1] = transformed_uvs[i + 1] * 2.0 - 1.0;
+    //         shift_y = shift_y || (transformed_uvs[i + 1] < -0.001);
+    //     }
 
-        // do we need to shift anything?
-        if (shift_x || shift_y) {
-            for (int i = 0; i < 8; i += 2) {
-                if (shift_x) transformed_uvs[i] += 1.0;
-                if (shift_y) transformed_uvs[i + 1] += 1.0;
-            }
-        }
+    //     // do we need to shift anything?
+    //     if (shift_x || shift_y) {
+    //         for (int i = 0; i < 8; i += 2) {
+    //             if (shift_x) transformed_uvs[i] += 1.0;
+    //             if (shift_y) transformed_uvs[i + 1] += 1.0;
+    //         }
+    //     }
 
-        // Convert transformed_uvs to our display transform
-        Transform2D display_transform;
-        display_transform.columns[0] = Vector2(transformed_uvs[2] - transformed_uvs[0], transformed_uvs[3] - transformed_uvs[1]);
-        display_transform.columns[1] = Vector2(transformed_uvs[4] - transformed_uvs[0], transformed_uvs[5] - transformed_uvs[1]);
-        display_transform.columns[2] = Vector2(transformed_uvs[0], transformed_uvs[1]);
-        feed->set_transform(display_transform);
-    }
+    //     // Convert transformed_uvs to our display transform
+    //     Transform2D display_transform;
+    //     display_transform.columns[0] = Vector2(transformed_uvs[2] - transformed_uvs[0], transformed_uvs[3] - transformed_uvs[1]);
+    //     display_transform.columns[1] = Vector2(transformed_uvs[4] - transformed_uvs[0], transformed_uvs[5] - transformed_uvs[1]);
+    //     display_transform.columns[2] = Vector2(transformed_uvs[0], transformed_uvs[1]);
+    //     feed->set_transform(display_transform);
+    // }
 
     // mark m_pimpl->anchors as stale
     make_anchors_stale();
 
-    // Now need to handle our m_pimpl->anchors and such....
-    ArTrackableList *plane_list = nullptr;
-    ArTrackableList_create(m_pimpl->ar_session, &plane_list);
-    if (plane_list != nullptr) {
-        //@TODO possibly change this to using ArFrame_getUpdatedTrackables, but then need to figure out how we retire merged planes
-        // can't say I find the documentation easy to follow here
+    // // Now need to handle our m_pimpl->anchors and such....
+    // ArTrackableList *plane_list = nullptr;
+    // ArTrackableList_create(m_pimpl->ar_session, &plane_list);
+    // if (plane_list != nullptr) {
+    //     //@TODO possibly change this to using ArFrame_getUpdatedTrackables, but then need to figure out how we retire merged planes
+    //     // can't say I find the documentation easy to follow here
 
-        ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
-        ArSession_getAllTrackables(m_pimpl->ar_session, plane_tracked_type, plane_list);
+    //     ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
+    //     ArSession_getAllTrackables(m_pimpl->ar_session, plane_tracked_type, plane_list);
 
-        int32_t plane_list_size = 0;
-        ArTrackableList_getSize(m_pimpl->ar_session, plane_list, &plane_list_size);
+    //     int32_t plane_list_size = 0;
+    //     ArTrackableList_getSize(m_pimpl->ar_session, plane_list, &plane_list_size);
 
-        for (int i = 0; i < plane_list_size; i++) {
-            // stealing this bit from the ARCore SDK....
+    //     for (int i = 0; i < plane_list_size; i++) {
+    //         // stealing this bit from the ARCore SDK....
 
-            // ALOGV("Godot ARCore: checking plane %d", i);
+    //         // ALOGV("Godot ARCore: checking plane %d", i);
 
-            // grab our trackable plane...
-            ArTrackable *ar_trackable = nullptr;
-            ArTrackableList_acquireItem(m_pimpl->ar_session, plane_list, i, &ar_trackable);
-            ArPlane *ar_plane = ArAsPlane(ar_trackable);
+    //         // grab our trackable plane...
+    //         ArTrackable *ar_trackable = nullptr;
+    //         ArTrackableList_acquireItem(m_pimpl->ar_session, plane_list, i, &ar_trackable);
+    //         ArPlane *ar_plane = ArAsPlane(ar_trackable);
 
-            ArTrackingState out_tracking_state;
-            ArTrackable_getTrackingState(m_pimpl->ar_session, ar_trackable, &out_tracking_state);
-            if (out_tracking_state != ArTrackingState::AR_TRACKING_STATE_TRACKING) {
-                std::cerr<<"Godot ARCore: not tracking plane "<<i<<std::endl;
-                continue;
-            }
+    //         ArTrackingState out_tracking_state;
+    //         ArTrackable_getTrackingState(m_pimpl->ar_session, ar_trackable, &out_tracking_state);
+    //         if (out_tracking_state != ArTrackingState::AR_TRACKING_STATE_TRACKING) {
+    //             std::cerr<<"Godot ARCore: not tracking plane "<<i<<std::endl;
+    //             continue;
+    //         }
 
-            // subsume this plane, I'm not sure what that means, we don't seem to use the result...
-            ArPlane *subsume_plane;
-            ArPlane_acquireSubsumedBy(m_pimpl->ar_session, ar_plane, &subsume_plane);
-            if (subsume_plane != nullptr) {
-                std::cerr<<"Godot ARCore: can't subsume plane "<<i<<std::endl;
+    //         // subsume this plane, I'm not sure what that means, we don't seem to use the result...
+    //         ArPlane *subsume_plane;
+    //         ArPlane_acquireSubsumedBy(m_pimpl->ar_session, ar_plane, &subsume_plane);
+    //         if (subsume_plane != nullptr) {
+    //             std::cerr<<"Godot ARCore: can't subsume plane "<<i<<std::endl;
 
-                ArTrackable_release(ArAsTrackable(subsume_plane));
-                continue;
-            }
+    //             ArTrackable_release(ArAsTrackable(subsume_plane));
+    //             continue;
+    //         }
 
-            // grabbing the tracking state again, not sure why...
-            ArTrackingState plane_tracking_state;
-            ArTrackable_getTrackingState(m_pimpl->ar_session, ArAsTrackable(ar_plane), &plane_tracking_state);
-            if (plane_tracking_state == ArTrackingState::AR_TRACKING_STATE_TRACKING) {
-                // now we need to check if we have this as a tracking in Godot...
-                anchor_map *am = nullptr;
+    //         // grabbing the tracking state again, not sure why...
+    //         ArTrackingState plane_tracking_state;
+    //         ArTrackable_getTrackingState(m_pimpl->ar_session, ArAsTrackable(ar_plane), &plane_tracking_state);
+    //         if (plane_tracking_state == ArTrackingState::AR_TRACKING_STATE_TRACKING) {
+    //             // now we need to check if we have this as a tracking in Godot...
+    //             anchor_map *am = nullptr;
 
-                auto search = m_pimpl->anchors.find(ar_plane);
-                if (search != m_pimpl->anchors.end()) {
-                    am = m_pimpl->anchors[ar_plane];
-                    am->stale = false;
+    //             auto search = m_pimpl->anchors.find(ar_plane);
+    //             if (search != m_pimpl->anchors.end()) {
+    //                 am = m_pimpl->anchors[ar_plane];
+    //                 am->stale = false;
 
-                    // If this is an already observed trackable release it so it doesn't
-                    // leave an additional reference dangling.
-                    ArTrackable_release(ar_trackable);
-                } else {
-                    // ALOGV("Godot ARCore: adding new plane %d", i);
+    //                 // If this is an already observed trackable release it so it doesn't
+    //                 // leave an additional reference dangling.
+    //                 ArTrackable_release(ar_trackable);
+    //             } else {
+    //                 // ALOGV("Godot ARCore: adding new plane %d", i);
 
-                    am = new anchor_map;
-                    am->stale = false;
+    //                 am = new anchor_map;
+    //                 am->stale = false;
 
-                    // create our tracker
-                    am->tracker.instantiate();
-                    am->tracker->set_tracker_name(String("Anchor ") + String::num_int64(last_anchor_id++));
-                    am->tracker->set_tracker_type(XRServer::TRACKER_ANCHOR);
+    //                 // create our tracker
+    //                 am->tracker.instantiate();
+    //                 am->tracker->set_tracker_name(String("Anchor ") + String::num_int64(last_anchor_id++));
+    //                 am->tracker->set_tracker_type(XRServer::TRACKER_ANCHOR);
 
-                    XRServer::get_singleton()->add_tracker(am->tracker);
+    //                 XRServer::get_singleton()->add_tracker(am->tracker);
 
-                    m_pimpl->anchors[ar_plane] = am;
-                }
+    //                 m_pimpl->anchors[ar_plane] = am;
+    //             }
 
-                if (am != nullptr) {
-                    ///@TODO need to find a way to figure out something has chanced, we don't really want to update this every frame if nothing
-                    // has changed....
+    //             if (am != nullptr) {
+    //                 ///@TODO need to find a way to figure out something has chanced, we don't really want to update this every frame if nothing
+    //                 // has changed....
 
-                    // get center position of our plane
-                    float mat[4][4];
-                    ArPose *pose;
-                    ArPose_create(m_pimpl->ar_session, nullptr, &pose);
-                    ArPlane_getCenterPose(m_pimpl->ar_session, ar_plane, pose);
-                    ArPose_getMatrix(m_pimpl->ar_session, pose, (float *)mat);
-                    // normal_vec_ = util::GetPlaneNormal(m_pimpl->ar_session, *pose);
+    //                 // get center position of our plane
+    //                 float mat[4][4];
+    //                 ArPose *pose;
+    //                 ArPose_create(m_pimpl->ar_session, nullptr, &pose);
+    //                 ArPlane_getCenterPose(m_pimpl->ar_session, ar_plane, pose);
+    //                 ArPose_getMatrix(m_pimpl->ar_session, pose, (float *)mat);
+    //                 // normal_vec_ = util::GetPlaneNormal(m_pimpl->ar_session, *pose);
 
-                    Transform3D t;
-                    t.basis.rows[0].x = mat[0][0];
-                    t.basis.rows[1].x = mat[0][1];
-                    t.basis.rows[2].x = mat[0][2];
-                    t.basis.rows[0].y = mat[1][0];
-                    t.basis.rows[1].y = mat[1][1];
-                    t.basis.rows[2].y = mat[1][2];
-                    t.basis.rows[0].z = mat[2][0];
-                    t.basis.rows[1].z = mat[2][1];
-                    t.basis.rows[2].z = mat[2][2];
-                    t.origin = Vector3(mat[3][0], mat[3][1], mat[3][2]);
-                    // TODO set tracking confidence based on our tracking status
-                    am->tracker->set_pose("default", t, Vector3(), Vector3(), XRPose::XR_TRACKING_CONFIDENCE_HIGH);
+    //                 Transform3D t;
+    //                 t.basis.rows[0].x = mat[0][0];
+    //                 t.basis.rows[1].x = mat[0][1];
+    //                 t.basis.rows[2].x = mat[0][2];
+    //                 t.basis.rows[0].y = mat[1][0];
+    //                 t.basis.rows[1].y = mat[1][1];
+    //                 t.basis.rows[2].y = mat[1][2];
+    //                 t.basis.rows[0].z = mat[2][0];
+    //                 t.basis.rows[1].z = mat[2][1];
+    //                 t.basis.rows[2].z = mat[2][2];
+    //                 t.origin = Vector3(mat[3][0], mat[3][1], mat[3][2]);
+    //                 // TODO set tracking confidence based on our tracking status
+    //                 am->tracker->set_pose("default", t, Vector3(), Vector3(), XRPose::XR_TRACKING_CONFIDENCE_HIGH);
 
-                    ArPose_destroy(pose);
+    //                 ArPose_destroy(pose);
 
-                    // TODO should now get the polygon data and build our mesh
-                }
-            } else {
-                std::cerr<<"Godot ARCore: huh? I thought we were tracking plane "<<i<<std::endl;
-            }
-        }
+    //                 // TODO should now get the polygon data and build our mesh
+    //             }
+    //         } else {
+    //             std::cerr<<"Godot ARCore: huh? I thought we were tracking plane "<<i<<std::endl;
+    //         }
+    //     }
 
-        ArTrackableList_destroy(plane_list);
+    //     ArTrackableList_destroy(plane_list);
 
-        // now we remove our stale trackers..
-        remove_stale_anchors();
-    }
+    //     // now we remove our stale trackers..
+    //     remove_stale_anchors();
+    // }
 }
 
 ARCoreInterface::ARCoreInterface() {

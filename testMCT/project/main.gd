@@ -10,5 +10,5 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	$GDExample/MeshInstance3D.rotate(Vector3.FORWARD, delta)
-	print("MCT process")
+	#print("MCT process")
 	

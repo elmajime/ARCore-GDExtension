@@ -5,6 +5,14 @@
 #include <godot_cpp/classes/os.hpp>
 
 jobject ARCorePluginWrapper::arcore_plugin_instance = nullptr;
+jobject ARCorePluginWrapper::godot_instance = nullptr;
+jobject ARCorePluginWrapper::activity = nullptr;
+jclass ARCorePluginWrapper::godot_class = nullptr;
+jclass ARCorePluginWrapper::activity_class = nullptr;
+
+jmethodID ARCorePluginWrapper::_get_surface = nullptr;
+jmethodID ARCorePluginWrapper::_is_activity_resumed = nullptr;
+jmethodID ARCorePluginWrapper::_get_display_rotation = nullptr;
 
 ARCorePluginWrapper::ARCorePluginWrapper() {
     _get_surface = nullptr;

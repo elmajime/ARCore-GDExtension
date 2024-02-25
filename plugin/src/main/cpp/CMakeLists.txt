@@ -40,12 +40,12 @@ endif (NOT (ANDROID_STL STREQUAL "c++_shared"))
 
 # Check if ANDROID_NDK is set.
 if (NOT ANDROID_NDK)
-    # Set to ANDROID_NDK_HOME environment variable if it's set.
-    if (DEFINED ENV{ANDROID_NDK_HOME})
-        set(ANDROID_NDK $ENV{ANDROID_NDK_HOME})
-    else (DEFINED ENV{ANDROID_NDK_HOME})
-        message(WARNING "ANDROID_NDK_HOME is not set")
-    endif (DEFINED ENV{ANDROID_NDK_HOME})
+    # Set to ANDROID_NDK_ROOT environment variable if it's set.
+    if (DEFINED ENV{ANDROID_NDK_ROOT})
+        file(TO_CMAKE_PATH $ENV{ANDROID_NDK_ROOT} ANDROID_NDK)
+    else (DEFINED ENV{ANDROID_NDK_ROOT})
+        message(WARNING "ANDROID_NDK_ROOT is not set")
+    endif (DEFINED ENV{ANDROID_NDK_ROOT})
 endif (NOT ANDROID_NDK)
 
 # Check if CMAKE_TOOLCHAIN_FILE is set.
@@ -95,7 +95,7 @@ endif (CMAKE_BUILD_TYPE MATCHES Debug)
 
 
 ## godot-cpp library
-set(GODOT_CPP_DIR "${CMAKE_SOURCE_DIR}/../godot-cpp")
+set(GODOT_CPP_DIR "${CMAKE_SOURCE_DIR}/../../../../godot-cpp")
 set(GODOT-CPP "godot-cpp")
 
 # Use the godot-cpp prebuilt static binary
@@ -114,15 +114,33 @@ set_target_properties(${GODOT-CPP} PROPERTIES IMPORTED_LOCATION ${GODOT_CPP_STAT
 
 
 ## Setup the plugin library
-file(GLOB_RECURSE ANDROID_SOURCES ${CMAKE_SOURCE_DIR}/src/main/cpp/*.c**)
-file(GLOB_RECURSE ANDROID_HEADERS ${CMAKE_SOURCE_DIR}/src/main/cpp/*.h**)
+file(GLOB_RECURSE ANDROID_HEADERS ${CMAKE_SOURCE_DIR}/*.h**)
+file(GLOB_RECURSE ANDROID_SOURCES ${CMAKE_SOURCE_DIR}/*.c**)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
         ${ANDROID_SOURCES} ${ANDROID_HEADERS}
         )
 
+# Specify the path to ARCore native libraries
+set(ARCORE_LIB_DIR ${CMAKE_SOURCE_DIR}/../../../build_gradle/arcore-native/jni/arm64-v8a)
+
+# Add ARCore library
+add_library(arcore_sdk_c SHARED IMPORTED)
+set_target_properties(arcore_sdk_c PROPERTIES IMPORTED_LOCATION ${ARCORE_LIB_DIR}/libarcore_sdk_c.so)
+
+add_library(arcore_sdk_jni SHARED IMPORTED)
+set_target_properties(arcore_sdk_jni PROPERTIES IMPORTED_LOCATION ${ARCORE_LIB_DIR}/libarcore_sdk_jni.so)
+
+# # Find JNI
+# set(JAVA_AWT_LIBRARY NotNeeded)
+# set(JAVA_JVM_LIBRARY NotNeeded)
+# set(JAVA_INCLUDE_PATH2 NotNeeded)
+# set(JAVA_AWT_INCLUDE_PATH NotNeeded)
+# find_package(JNI REQUIRED)
+
 target_include_directories(${CMAKE_PROJECT_NAME}
         SYSTEM PUBLIC
+        # ${JNI_INCLUDE_DIRS}
         ${GODOT_CPP_INCLUDE_DIRECTORIES}
         )
 
@@ -132,6 +150,8 @@ target_include_directories(${CMAKE_PROJECT_NAME}
 target_link_libraries(${CMAKE_PROJECT_NAME}
         # List libraries link to the target library
         android
+        arcore_sdk_c
+        arcore_sdk_jni
         log
         ${GODOT-CPP}
         )

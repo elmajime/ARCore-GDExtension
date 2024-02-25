@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Limits app visibility in the Google Play Store to ARCore supported devices
+        (https://developers.google.com/ar/devices). -->
+    <uses-feature android:name="android.hardware.camera.ar" />
+
     <application>
         <!--
         Plugin metadata:
@@ -13,9 +19,15 @@
         - The `android:value` attribute should be the classpath to the plugin
         initializer.
         -->
+        <!-- "AR Required" app, requires "Google Play Services for AR" (ARCore)
+         to be installed, as the app does not include any non-AR features. -->
         <meta-data
-            android:name="org.godotengine.plugin.v2.${godotPluginName}"
-            android:value="${godotPluginPackageName}.ARCoreGDExtension"/>
+            android:name="com.google.ar.core"
+            android:value="required"/>
+
+        <meta-data
+            android:name="org.godotengine.plugin.v2.Godot-ARCoreExtension"
+            android:value="com.arcore.godot.ARCoreGDExtension"/>
     </application>
 
 </manifest>

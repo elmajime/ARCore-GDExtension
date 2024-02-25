@@ -314,7 +314,7 @@ void ARCoreInterface::_post_draw_viewport(const RID &p_render_target, const Rect
 }
 
 // Positions of the quad vertices in clip space (X, Y).
-const GLfloat kVertices[] = {
+const float kVertices[] = {
         //	-1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, +1.0f, +1.0f,
         0.0f,
         0.0f,

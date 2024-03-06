@@ -1,8 +1,10 @@
 extends Node2D
 
 # TODO: Update to match your plugin's name
-var _plugin_name = "GDExtensionAndroidPluginTemplate"
+var _plugin_name = "ARCoreGDExtension"
 var _android_plugin
+
+var simultaneous_scene = preload("res://main3D.tscn").instantiate()
 
 func _ready():
 	if Engine.has_singleton(_plugin_name):
@@ -13,4 +15,4 @@ func _ready():
 func _on_Button_pressed():
 	if _android_plugin:
 		# TODO: Update to match your plugin's API
-		_android_plugin.helloWorld()
+		get_tree().root.add_child(simultaneous_scene)

@@ -8,3 +8,6 @@ Right now :
  - partially copies the files in the addons folder of the demo project
 
  
+ Now the plugin code and project compile, deploy and run but it fails finding the ARCoreGDExtension plugin.
+ I needed to make it compile against SDK 31 as the phone is 31.
+ There might be a need to convert the project to v2 Android Plugins https://docs.godotengine.org/fr/4.x/tutorials/platform/android/android_plugin.html

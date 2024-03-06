@@ -1,9 +1,9 @@
 plugins {
-    id 'com.android.application'
+    id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
 }
 
-def buildDir = "D:/Documents/Repositories/ARCore-GDExtension/plugin/build_gradle"
+def buildDir = "D:/Documents/Repositories/ARCore-GDExtension/plugin/build"
 
 // TODO: Update value to your plugin's name.
 def pluginName = "ARCoreGDExtension"
@@ -19,18 +19,18 @@ def pluginPackageName = "org.godotengine.plugin.android.gdextension.arcore"
  */
 def gdextensionSupportsNonAndroidPlatforms = false
 
-project.buildDir = './build_gradle'
+project.buildDir = './build'
 
 android {
-    namespace 'com.example.myapplication'
-    compileSdk 33
+    namespace 'com.arcore'
+    compileSdk 31
 
     defaultConfig {
-        applicationId "com.example.myapplication"
-        minSdk 33
-        targetSdk 33
+        minSdk 31
+        targetSdk 31
         versionCode 1
         versionName "1.0"
+        setProperty("archivesBaseName", "${pluginName}-$versionName")
 
         ndk {
             abiFilters 'arm64-v8a'
@@ -82,7 +82,7 @@ def arcore_libpath = file("${buildDir}/arcore-native")
 
 dependencies {
     // ARCore dependency
-    implementation 'com.google.ar:core:1.33.0' // Update with the latest version
+    implementation 'com.google.ar:core:1.31.0' // Update with the latest version
     
     // Define a configuration for ARCore implementation
     configurations {
@@ -90,7 +90,7 @@ dependencies {
     }
     
     // Map ARCore dependency to the new configuration
-    arcoreImplementation 'com.google.ar:core:1.33.0'
+    arcoreImplementation 'com.google.ar:core:1.31.0'
 }
 
 // Task to extract .so files from ARCore AAR
@@ -122,33 +122,39 @@ task copyExportScriptsTemplate(type: Copy) {
 task copyDebugAARToAddons(type: Copy) {
     description = "Copies the generated debug AAR binary to the plugin's addons directory"
 
-    from("build/outputs/aar") {
-        include("$pluginName-debug.aar")
+    from("${buildDir}/outputs/aar") {
+        include("${pluginName}-$project.android.defaultConfig.versionName-debug.aar")
     }
-    into("src/main/assets/addons/" + pluginName + "/.bin/debug")
+    into("src/main/assets/addons/" + pluginName + "/.bin/debug/arm64-v8a/")
 }
 
 task copyReleaseAARToAddons(type: Copy) {
     description = "Copies the generated release AAR binary to the plugin's addons directory"
 
-    from("build/outputs/aar") {
-        include("$pluginName-release.aar")
+    from("${buildDir}/outputs/aar") {
+        include("${pluginName}-$project.android.defaultConfig.versionName-release.aar")
     }
-    into("src/main/assets/addons/" + pluginName + "/.bin/release")
+    into("src/main/assets/addons/" + pluginName + "/.bin/release/arm64-v8a/")
 }
 
 task copyDebugSharedLibs(type: Copy) {
     description = "Copies the generated debug .so shared library to the plugin's addons directory"
+    includeEmptyDirs = true
 
-    from("build/intermediates/cxx/debug/obj")
-    into("src/main/assets/addons/" + pluginName + "/.bin/debug")
+    from("${buildDir}/output_libs/arm64-v8a") {
+        include("lib${pluginName}d.so")
+    }
+    into("src/main/assets/addons/" + pluginName + "/.bin/debug/arm64-v8a")
 }
 
 task copyReleaseSharedLibs(type: Copy) {
     description = "Copies the generated release .so shared library to the plugin's addons directory"
+    includeEmptyDirs = true
 
-    from("build/intermediates/cxx/release/obj")
-    into("src/main/assets/addons/" + pluginName + "/.bin/release")
+    from("${buildDir}/output_libs/arm64-v8a") {
+        include("lib${pluginName}.so")
+    }
+    into("src/main/assets/addons/" + pluginName + "/.bin/release/arm64-v8a")
 }
 
 task cleanDemoAddons(type: Delete) {
@@ -167,6 +173,17 @@ task copyAddonsToDemo(type: Copy) {
         }
     }
     into("demo/addons/" + pluginName)
+}
+
+task printSoFiles {
+    doLast {
+        println "Generated .so files:"
+        buildDir.eachFile { file ->
+            if (file.name.endsWith('.so')) {
+                println "- ${file.name}: ${file.absolutePath}"
+            }
+        }
+    }
 }
 
 preBuild.dependsOn(copyExportScriptsTemplate)

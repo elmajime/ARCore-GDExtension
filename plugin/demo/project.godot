@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="GDExtension Android Plugin Demo"
-run/main_scene="res://main.tscn"
+run/main_scene="res://main3D.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/ARCoreGDExtension/plugin.cfg")
 
 [rendering]
 

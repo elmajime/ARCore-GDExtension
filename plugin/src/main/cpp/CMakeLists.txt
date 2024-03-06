@@ -67,6 +67,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # TODO: Update cmake project's name.
 project(ARCoreGDExtension LANGUAGES CXX)
 
+set(CMAKE_DEBUG_POSTFIX d)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../../build/output_libs/arm64-v8a)
+
 set(GODOT_COMPILE_FLAGS)
 set(GODOT_LINKER_FLAGS)
 
@@ -122,7 +125,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         )
 
 # Specify the path to ARCore native libraries
-set(ARCORE_LIB_DIR ${CMAKE_SOURCE_DIR}/../../../build_gradle/arcore-native/jni/arm64-v8a)
+set(ARCORE_LIB_DIR ${CMAKE_SOURCE_DIR}/../../../build/arcore-native/jni/arm64-v8a)
 
 # Add ARCore library
 add_library(arcore_sdk_c SHARED IMPORTED)

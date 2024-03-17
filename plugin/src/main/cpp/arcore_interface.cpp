@@ -3,6 +3,7 @@
 //
 
 #include "arcore_interface.h"
+#include "arcore_plugin_wrapper.h"
 #include "utils.h"
 
 #include <godot_cpp/classes/main_loop.hpp>
@@ -21,6 +22,7 @@ uint32_t ARCoreInterface::_get_capabilities() const {
 }
 
 int32_t ARCoreInterface::_get_camera_feed_id() const {
+    ALOGE("MCT Godot ARCore: _get_camera_feed_id");
     if (feed.is_valid()) {
         return feed->get_id();
     } else {
@@ -29,6 +31,7 @@ int32_t ARCoreInterface::_get_camera_feed_id() const {
 }
 
 void ARCoreInterface::_bind_methods() {
+    ALOGE("MCT Godot ARCore: _bind_methods");
     ClassDB::bind_method(D_METHOD("_resume"), &ARCoreInterface::_resume);
     ClassDB::bind_method(D_METHOD("_pause"), &ARCoreInterface::_pause);
 }
@@ -60,6 +63,7 @@ void ARCoreInterface::_pause() {
 }
 
 void ARCoreInterface::notification(int p_what) {
+    ALOGE("MCT Godot ARCore: notification");
     // Needs testing, this should now be called
 
     XRServer *xr_server = XRServer::get_singleton();
@@ -88,6 +92,7 @@ void ARCoreInterface::notification(int p_what) {
 }
 
 bool ARCoreInterface::_initialize() {
+    ALOGE("MCT Godot ARCore: _initialize");
     // TODO we may want to check for status PAUZED and just call resume (if we decide to implement that)
 
     XRServer *xr_server = XRServer::get_singleton();
@@ -97,41 +102,40 @@ bool ARCoreInterface::_initialize() {
         // if we fully failed last time, don't try again..
         return false;
     } else if (init_status == NOT_INITIALISED) {
-        ALOGV("Godot ARCore: Initialising...");
+        ALOGV("MCT Godot ARCore: Initialising...");
         init_status = START_INITIALISE;
 
         // create our camera feed
         if (feed.is_null()) {
-            ALOGV("Godot ARCore: Creating camera feed...");
+            ALOGV("MCT Godot ARCore: Creating camera feed...");
 
             feed.instantiate();
             // TODO _set_name is not exposed to GDExtensions, needs to be exposed!
-            // feed->_set_name("ARCore");
+            feed->set_name("ARCore");
             feed->set_active(true);
 
             CameraServer *cs = CameraServer::get_singleton();
             if (cs != nullptr) {
                 cs->add_feed(feed);
 
-                ALOGV("Godot ARCore: Feed %d added", feed->get_id());
+                ALOGV("MCT Godot ARCore: Feed %d added", feed->get_id());
             }
         }
 
         if (ar_session == nullptr) {
-            /* TODO godot::android_api no longer exists, look into alternative and change
-            ALOGV("Godot ARCore: Getting environment");
+            ALOGV("MCT Godot ARCore: Getting environment");
 
             // get some android things
-            JNIEnv *env = godot::android_api->godot_android_get_env();
+            JNIEnv *env = ARCorePluginWrapper::get_env();
 
-            jobject context = godot::android_api->godot_android_get_activity();
+            jobject context = ARCorePluginWrapper::get_activity();
             if (context == nullptr) {
                 ALOGE("Godot ARCore: Couldn't get context");
                 init_status = INITIALISE_FAILED; // don't try again.
                 return false;
             }
 
-            ALOGV("Godot ARCore: Create ArSession");
+            ALOGV("MCT Godot ARCore: Create ArSession");
 
             if (ArSession_create(env, context, &ar_session) != AR_SUCCESS || ar_session == nullptr) {
                 ALOGE("Godot ARCore: ARCore couldn't be created.");
@@ -139,7 +143,7 @@ bool ARCoreInterface::_initialize() {
                 return false;
             }
 
-            ALOGV("Godot ARCore: Create ArFrame.");
+            ALOGV("MCT Godot ARCore: Create ArFrame.");
 
             ArFrame_create(ar_session, &ar_frame);
             if (ar_frame == nullptr) {
@@ -165,9 +169,8 @@ bool ARCoreInterface::_initialize() {
             // Trigger display rotation
             display_rotation = -1;
 
-            ALOGV("Godot ARCore: Initialised.");
+            ALOGV("MCT Godot ARCore: Initialised.");
             init_status = INITIALISED;
-            */
         }
 
         // and call resume for the first time to complete this
@@ -196,6 +199,7 @@ bool ARCoreInterface::_initialize() {
 
 void ARCoreInterface::_uninitialize() {
     if (_is_initialized()) {
+    ALOGE("MCT Godot ARCore: _uninitialize");
         // TODO we may want to call ArSession_pauze here and introduce a new status PAUZED
         // then move cleanup to our destruct.
 
@@ -235,6 +239,7 @@ void ARCoreInterface::_uninitialize() {
 }
 
 Vector2 ARCoreInterface::_get_render_target_size() {
+    ALOGE("MCT Godot ARCore: _get_render_target_size");
     Vector2 target_size = DisplayServer::get_singleton()->screen_get_size();
     return target_size;
 }
@@ -301,6 +306,7 @@ PackedFloat64Array ARCoreInterface::_get_projection_for_view(uint32_t p_view, do
 }
 
 void ARCoreInterface::_post_draw_viewport(const RID &p_render_target, const Rect2 &p_screen_rect) {
+    ALOGE("MCT Godot ARCore: _post_draw_viewport");
     // We must have a valid render target
     ERR_FAIL_COND(!p_render_target.is_valid());
 
@@ -354,13 +360,14 @@ void ARCoreInterface::_process() {
         // not yet initialised so....
         return;
     } else if ((ar_session == nullptr) or (feed.is_null())) {
+        ALOGE("MCT Godot ARCore: _process don't have a session yet so...");
         // don't have a session yet so...
         return;
     }
 
-    /* TODO change this, doesn't work this way anymore
+    // TODO change this, doesn't work this way anymore
     // check display rotation
-    int new_display_rotation = android12_api->godot_android_get_display_rotation();
+    int new_display_rotation = 1; //android12_api->godot_android_get_display_rotation();
     if (new_display_rotation != display_rotation) {
         display_rotation = new_display_rotation;
         if ((display_rotation == 1) || (display_rotation == 3)) {
@@ -370,23 +377,23 @@ void ARCoreInterface::_process() {
         }
         have_display_transform = false;
 
-        ALOGV("Godot ARCore: Window orientation changes to %d (%d, %d)", display_rotation, width, height);
+        ALOGV("MCT Godot ARCore: Window orientation changes to %d (%d, %d)", display_rotation, width, height);
     }
-    */
+    
 
-    /* TODO change this, texture ID will be different depending on graphics API
+    // TODO change this, texture ID will be different depending on graphics API
     // setup our camera texture
     if (camera_texture_id == 0) {
         // The size here isn't actually used, ARCore will manage it, but set it just in case
         // Also this is a YCbCr texture, not RGB, should probably add a format for that some day :)
-        feed->_set_external(width, height);
-        RID camera_texture = feed->get_texture(CameraServer::FEED_RGBA_IMAGE);
-        godot_rid camera_texture_rid = camera_texture._get_godot_rid();
-        camera_texture_id = godot::arvr_api->godot_arvr_get_texid(&camera_texture_rid);
+        feed->set_external(width, height);
+        RID camera_texture = feed->get_texture(CameraServer::FEED_YCBCR_IMAGE);
+        // godot_rid camera_texture_rid = camera_texture._get_godot_rid();
+        // camera_texture_id = godot::arvr_api->godot_arvr_get_texid(&camera_texture_rid);
+        camera_texture_id = camera_texture.get_id();
 
-        ALOGV("Godot ARCore: Created: %d", camera_texture_id);
+        ALOGV("MCT Godot ARCore: Created: %d", camera_texture_id);
     }
-    */
 
     // Have ARCore grab a camera frame, load it into our texture object and do its funky SLAM logic
     ArSession_setCameraTextureName(ar_session, camera_texture_id);
@@ -549,7 +556,7 @@ void ARCoreInterface::_process() {
         for (int i = 0; i < plane_list_size; i++) {
             // stealing this bit from the ARCore SDK....
 
-            // ALOGV("Godot ARCore: checking plane %d", i);
+            // ALOGV("MCT Godot ARCore: checking plane %d", i);
 
             // grab our trackable plane...
             ArTrackable *ar_trackable = nullptr;
@@ -589,7 +596,7 @@ void ARCoreInterface::_process() {
                     // leave an additional reference dangling.
                     ArTrackable_release(ar_trackable);
                 } else {
-                    // ALOGV("Godot ARCore: adding new plane %d", i);
+                    // ALOGV("MCT Godot ARCore: adding new plane %d", i);
 
                     am = new anchor_map;
                     am->stale = false;

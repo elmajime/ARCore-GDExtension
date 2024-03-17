@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://b0n6vtr0gl6l3"]
+[gd_scene load_steps=6 format=3 uid="uid://b0n6vtr0gl6l3"]
 
 [ext_resource type="Script" path="res://MeshInstance3D.gd" id="1_0ufg4"]
 [ext_resource type="Script" path="res://main3D.gd" id="1_a4ilg"]
+[ext_resource type="Script" path="res://CamSprite.gd" id="4_earnc"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uqmg6"]
 albedo_color = Color(0.839216, 0.458824, 0.811765, 1)
@@ -11,9 +12,9 @@ albedo_color = Color(0.839216, 0.458824, 0.811765, 1)
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_a4ilg")
 
-[node name="XROrigin3D" type="Node3D" parent="."]
+[node name="Origin3D" type="Node3D" parent="."]
 
-[node name="XRCamera3D" type="Camera3D" parent="XROrigin3D"]
+[node name="Camera3D" type="Camera3D" parent="Origin3D"]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.44477)
@@ -23,3 +24,6 @@ script = ExtResource("1_0ufg4")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.7839, 0.442961, 0.43507, -0.589591, 0.750733, 0.297964, -0.194635, -0.490087, 0.849666, -0.0265236, 1.21704, -0.0687435)
+
+[node name="CamSprite" type="Sprite2D" parent="."]
+script = ExtResource("4_earnc")

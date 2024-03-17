@@ -73,7 +73,7 @@ namespace godot {
         int width;
         int height;
         int display_rotation;
-        uint camera_texture_id;
+        int64_t camera_texture_id;
         uint last_anchor_id;
 
         Ref<CameraFeed> feed;

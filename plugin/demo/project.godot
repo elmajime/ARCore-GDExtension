@@ -15,6 +15,10 @@ run/main_scene="res://main3D.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+ARCoreGDExtension="*res://addons/ARCoreGDExtension/godot_arcore_interface.gd"
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/ARCoreGDExtension/plugin.cfg")
@@ -24,3 +28,8 @@ enabled=PackedStringArray("res://addons/ARCoreGDExtension/plugin.cfg")
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
+
+[xr]
+
+openxr/form_factor=1
+shaders/enabled=true

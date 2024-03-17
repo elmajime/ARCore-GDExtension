@@ -26,8 +26,8 @@
             android:value="required"/>
 
         <meta-data
-            android:name="org.godotengine.plugin.v2.Godot-ARCoreExtension"
-            android:value="com.arcore.godot.ARCoreGDExtension"/>
+            android:name="org.godotengine.plugin.v2.${godotPluginName}"
+            android:value="${godotPluginPackageName}.GDExtensionAndroidPluginARCore"/>
     </application>
 
 </manifest>

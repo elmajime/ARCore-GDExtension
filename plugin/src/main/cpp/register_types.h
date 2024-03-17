@@ -5,7 +5,7 @@
 
 using namespace godot;
 
-void initialize_arcore_module(ModuleInitializationLevel p_level);
-void uninitialize_arcore_module(ModuleInitializationLevel p_level);
+void initialize_plugin_module(ModuleInitializationLevel p_level);
+void uninitialize_plugin_module(ModuleInitializationLevel p_level);
 
 #endif // REGISTER_TYPES_H

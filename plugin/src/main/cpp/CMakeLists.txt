@@ -67,8 +67,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # TODO: Update cmake project's name.
 project(ARCoreGDExtension LANGUAGES CXX)
 
-set(CMAKE_DEBUG_POSTFIX d)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../../build/output_libs/arm64-v8a)
+#set(CMAKE_DEBUG_POSTFIX d)
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../../build/output_libs/arm64-v8a)
 
 set(GODOT_COMPILE_FLAGS)
 set(GODOT_LINKER_FLAGS)

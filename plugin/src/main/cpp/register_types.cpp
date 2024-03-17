@@ -6,23 +6,28 @@
 #include <godot_cpp/godot.hpp>
 
 #include "arcore_interface.h"
+#include "utils.h"
 #include <jni.h>
 
 using namespace godot;
 
 void initialize_plugin_module(ModuleInitializationLevel p_level) {
+    ALOGE("MCT Godot ARCore: start initialize_plugin_module");
     // TODO: Update to the proper ModuleInitializationLevel level for your plugin
     if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) {
         return;
     }
     ClassDB::register_class<ARCoreInterface>();
+    ALOGE("MCT Godot ARCore: end initialize_plugin_module");
 }
 
 void uninitialize_plugin_module(ModuleInitializationLevel p_level) {
+    ALOGE("MCT Godot ARCore: start uninitialize_plugin_module");
     // TODO: Update to the proper ModuleInitializationLevel level for your plugin
     if (p_level != godot::MODULE_INITIALIZATION_LEVEL_SCENE) {
         return;
     }
+    ALOGE("MCT Godot ARCore: end uninitialize_plugin_module");
 }
 
 extern "C" {
@@ -32,6 +37,7 @@ GDExtensionBool GDE_EXPORT plugin_library_init(GDExtensionInterfaceGetProcAddres
                                                 const GDExtensionClassLibraryPtr p_library,
                                                 GDExtensionInitialization
                                                 *r_initialization) {
+    ALOGE("MCT Godot ARCore: plugin_library_init");
     godot::GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
 
     init_obj.register_initializer(initialize_plugin_module);

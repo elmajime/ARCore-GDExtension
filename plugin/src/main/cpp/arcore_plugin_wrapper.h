@@ -29,7 +29,9 @@ public:
     ~ARCorePluginWrapper();
 
     static JNIEnv* get_env();
+    static jobject get_godot_class();
     static jobject get_activity();
+    static jobject get_global_context();
     // static jobject get_surface(JNIEnv *p_env);
     // static bool is_activity_resumed(JNIEnv *p_env);
     // static int get_display_rotation(JNIEnv *p_env);

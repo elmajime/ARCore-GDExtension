@@ -73,11 +73,15 @@ val arcore_libpath = file("${buildDir}/arcore-native")
 dependencies {
     implementation("org.godotengine:godot:4.2.0.stable")
     // TODO: Additional dependencies should be added to export_plugin.gd as well.
-    implementation("com.google.ar:core:1.31.0")
+    implementation("com.google.ar:core:1.+") // Use the latest version of ARCore
     configurations {
         create("arcoreImplementation")
     }
-    "arcoreImplementation"("com.google.ar:core:1.31.0")
+    "arcoreImplementation"("com.google.ar:core:1.+") // Use the latest version of ARCore
+
+    implementation(fileTree("./build/arcore-native") {
+        include("classes.jar")
+    })
 }
 
 // BUILD TASKS DEFINITION

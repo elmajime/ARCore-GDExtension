@@ -128,7 +128,9 @@ bool ARCoreInterface::_initialize() {
             // get some android things
             JNIEnv *env = ARCorePluginWrapper::get_env();
 
-            jobject context = ARCorePluginWrapper::get_activity();
+            jobject context = ARCorePluginWrapper::get_global_context();
+
+            // jobject context = ARCorePluginWrapper::get_activity();
             if (context == nullptr) {
                 ALOGE("Godot ARCore: Couldn't get context");
                 init_status = INITIALISE_FAILED; // don't try again.

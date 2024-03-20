@@ -79,8 +79,23 @@ JNIEnv *ARCorePluginWrapper::get_env() {
     return env;
 }
 
+jobject ARCorePluginWrapper::get_godot_class() {
+    return godot_class;
+}
+
 jobject ARCorePluginWrapper::get_activity() {
     return activity;
+}
+
+jobject ARCorePluginWrapper::get_global_context()
+{   
+    jclass activityThread = env->FindClass("android/app/ActivityThread");
+    jmethodID currentActivityThread = env->GetStaticMethodID(activityThread, "currentActivityThread", "()Landroid/app/ActivityThread;");
+    jobject activityThreadObj = env->CallStaticObjectMethod(activityThread, currentActivityThread);
+    
+    jmethodID getApplication = env->GetMethodID(activityThread, "getApplication", "()Landroid/app/Application;");
+    jobject context = env->CallObjectMethod(activityThreadObj, getApplication);
+    return context;
 }
 
 // jobject ARCorePluginWrapper::get_surface(JNIEnv *p_env) {

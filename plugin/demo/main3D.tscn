@@ -1,8 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://b0n6vtr0gl6l3"]
+[gd_scene load_steps=7 format=3 uid="uid://b0n6vtr0gl6l3"]
 
 [ext_resource type="Script" path="res://MeshInstance3D.gd" id="1_0ufg4"]
 [ext_resource type="Script" path="res://main3D.gd" id="1_a4ilg"]
 [ext_resource type="Script" path="res://CamSprite.gd" id="4_earnc"]
+
+[sub_resource type="Environment" id="Environment_p5o4h"]
+background_mode = 5
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uqmg6"]
 albedo_color = Color(0.839216, 0.458824, 0.811765, 1)
@@ -15,6 +18,7 @@ script = ExtResource("1_a4ilg")
 [node name="Origin3D" type="Node3D" parent="."]
 
 [node name="Camera3D" type="Camera3D" parent="Origin3D"]
+environment = SubResource("Environment_p5o4h")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4.44477)

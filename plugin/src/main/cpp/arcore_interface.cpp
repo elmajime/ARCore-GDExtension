@@ -385,14 +385,15 @@ void ARCoreInterface::_process() {
 
     // TODO change this, texture ID will be different depending on graphics API
     // setup our camera texture
-    if (camera_texture_id == 0) {
+    if (camera_texture_id == 0)
+    {
         // The size here isn't actually used, ARCore will manage it, but set it just in case
         // Also this is a YCbCr texture, not RGB, should probably add a format for that some day :)
         feed->set_external(width, height);
-        RID camera_texture = feed->get_texture(CameraServer::FEED_YCBCR_IMAGE);
+        camera_texture_id = feed->get_texture_tex_id(CameraServer::FEED_YCBCR_IMAGE);
         // godot_rid camera_texture_rid = camera_texture._get_godot_rid();
         // camera_texture_id = godot::arvr_api->godot_arvr_get_texid(&camera_texture_rid);
-        camera_texture_id = camera_texture.get_id();
+        // camera_texture_id = camera_texture.get_id();
 
         ALOGV("MCT Godot ARCore: Created: %d", camera_texture_id);
     }

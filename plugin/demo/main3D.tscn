@@ -1,8 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://b0n6vtr0gl6l3"]
+[gd_scene load_steps=8 format=3 uid="uid://b0n6vtr0gl6l3"]
 
 [ext_resource type="Script" path="res://MeshInstance3D.gd" id="1_0ufg4"]
 [ext_resource type="Script" path="res://main3D.gd" id="1_a4ilg"]
-[ext_resource type="Script" path="res://CamSprite.gd" id="4_earnc"]
 
 [sub_resource type="Environment" id="Environment_p5o4h"]
 background_mode = 5
@@ -11,6 +10,11 @@ background_mode = 5
 albedo_color = Color(0.839216, 0.458824, 0.811765, 1)
 
 [sub_resource type="PrismMesh" id="PrismMesh_erelu"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_46dqb"]
+albedo_color = Color(0, 1, 0, 1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_tcft2"]
 
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_a4ilg")
@@ -29,5 +33,7 @@ script = ExtResource("1_0ufg4")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.7839, 0.442961, 0.43507, -0.589591, 0.750733, 0.297964, -0.194635, -0.490087, 0.849666, -0.0265236, 1.21704, -0.0687435)
 
-[node name="CamSprite" type="Sprite2D" parent="."]
-script = ExtResource("4_earnc")
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.912804, -4.85608)
+material_override = SubResource("StandardMaterial3D_46dqb")
+mesh = SubResource("PrismMesh_tcft2")

@@ -145,6 +145,7 @@ target_include_directories(${CMAKE_PROJECT_NAME}
         SYSTEM PUBLIC
         # ${JNI_INCLUDE_DIRS}
         ${GODOT_CPP_INCLUDE_DIRECTORIES}
+        ../../../third_party/glm
         )
 
 # Specifies libraries CMake should link to your target library. You

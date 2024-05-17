@@ -9,10 +9,12 @@
 
 #include "godot_cpp/classes/xr_interface_extension.hpp"
 #include "godot_cpp/classes/xr_positional_tracker.hpp"
-#include "godot_cpp/classes/camera_feed.hpp"
 #include "godot_cpp/variant/projection.hpp"
 
 #include "include/arcore_c_api.h"
+
+#include "background_renderer.h"
+#include "plane_renderer.h"
 
 namespace godot {
     class ARCoreInterface : public XRInterfaceExtension {
@@ -65,37 +67,60 @@ namespace godot {
 
         virtual void notification(int p_what);
 
+        bool isDepthSupported();
+
     private:
-        InitStatus init_status;
-
-        ArSession *ar_session;
-        ArFrame *ar_frame;
-        int width;
-        int height;
-        int display_rotation;
-        int64_t camera_texture_id;
-        uint last_anchor_id;
-
-        Ref<CameraFeed> feed;
-
-        Ref<XRPositionalTracker> head;
-        Transform3D view;
-        Projection projection;
-        float z_near, z_far;
-        bool have_display_transform;
-
-        struct anchor_map {
-            Ref<XRPositionalTracker> tracker;
-            bool stale;
+        enum class Orientation: int32_t {
+            UNKNOWN = -1, //Not initialized
+            ROTATION_0 = 0, // Natural orientation (portrait mode for phones)
+            ROTATION_90 = 1, // 90° counter-clockwise rotation from the natural orientation
+            ROTATION_180 = 2, // upside down
+            ROTATION_270 = 3 // -270° counter-clockwise rotation from the natural orientation
         };
 
-        TrackingStatus tracking_state;
+        arcore_plugin::BackgroundRenderer m_background_renderer;
+        arcore_plugin::PlaneRenderer m_plane_renderer;
 
-        std::map<ArPlane *, anchor_map *> anchors;
+        InitStatus m_init_status;
 
-        void make_anchors_stale();
+        ArSession *m_ar_session;
+        ArFrame *m_ar_frame;
+        int m_width;
+        int m_height;
+        Orientation m_display_rotation;
+        uint m_last_anchor_id;
 
-        void remove_stale_anchors();
+        Ref<XRPositionalTracker> m_head;
+        Transform3D m_view;
+        Projection m_projection;
+        float m_z_near, m_z_far;
+
+        struct anchor_map {
+            Ref<XRPositionalTracker> m_tracker;
+            bool m_stale;
+        };
+
+        TrackingStatus m_tracking_state;
+
+        std::map<ArPlane *, anchor_map *> m_anchors;
+
+        int32_t m_plane_count;
+
+        bool m_depthColorVisualizationEnabled;
+        bool m_is_instant_placement_enabled;
+
+        // void make_anchors_stale();
+
+        // void remove_stale_anchors();
+
+        void configureSession();
+
+        void handleScreenOrientationChanges();
+
+        void estimateLight();
+
+        // void updateAndRenderPlanes(const glm::mat4& p_projection_mat, const glm::mat4& p_view_mat);
+
     };
 };
 

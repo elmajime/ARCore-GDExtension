@@ -32,7 +32,7 @@ ARCoreInterface::ARCoreInterface()
     m_is_instant_placement_enabled = false;
     m_depthColorVisualizationEnabled = false;
     m_projection.set_perspective(60.0, 1.0, m_z_near, m_z_far, false); // this is just a default, will be changed by ARCore
-
+    m_is_configured = false;
 }
 ARCoreInterface::~ARCoreInterface()
 {
@@ -179,6 +179,8 @@ bool ARCoreInterface::_initialize()
         }
 
         m_background_renderer.initialize(m_width, m_height);
+
+        configureSession();
     }
 
     return is_initialized();
@@ -609,9 +611,42 @@ void ARCoreInterface::_process()
                                  &is_depth_supported);
 
     //! Maxime: see how we can do this
-    // if (is_depth_supported) {
+    if (is_depth_supported) {
     //     depth_texture_.UpdateWithDepthImageOnGlThread(*m_ar_session, *m_ar_frame);
-    // }
+        godot::Ref<godot::CameraFeed> feed = m_background_renderer.getFeed();
+
+        ArImage* depthImage = nullptr;
+        if (ArFrame_acquireDepthImage16Bits(m_ar_session, m_ar_frame, &depthImage) != AR_SUCCESS) {
+            ALOGE("MCT Godot ARCore: Error: Failed to acquire depth image");
+            return;
+        }
+
+        ALOGE("MCT Godot ARCore: Acquired depth image");
+        int32_t width, height;
+        ArImage_getWidth(m_ar_session, depthImage, &width);
+        ArImage_getHeight(m_ar_session, depthImage, &height);
+
+        const uint8_t* depthData = nullptr;
+        int32_t depthDataSize = 0;
+        ArImage_getPlaneData(m_ar_session, depthImage, 0, reinterpret_cast<const uint8_t**>(&depthData), &depthDataSize);
+
+        PackedByteArray array;
+        array.resize(width*height*2); // 2 bytes per pixel (16-bit)
+
+        for (int i = 0; i < width * height * 2; ++i) {
+            // uint16_t depth_value = *(depthData + i*sizeof(uint8_t));
+            // // array[i * 2] = depth_value & 0xFF; // Low byte
+            // // array[i * 2 + 1] = (depth_value >> 8) & 0xFF; // High byte
+            // array.encode_u16(i*2, depth_value);
+            array[i] = *(depthData + i*sizeof(uint8_t));
+        }
+
+        ArImage_release(depthImage);
+
+        feed->set_external_depthmap(array, width, height);
+        feed->set_display_depthmap(true);
+        ALOGE("MCT Godot ARCore: sent depth image to godot");
+    }
 
     estimateLight();
 
@@ -688,6 +723,9 @@ bool ARCoreInterface::isDepthSupported()
 
 void ARCoreInterface::configureSession()
 {
+    if (m_is_configured)
+        return;
+        
   const bool is_depth_supported = isDepthSupported();
 
   ArConfig* ar_config = nullptr;
@@ -706,9 +744,12 @@ void ARCoreInterface::configureSession()
 //     ArConfig_setInstantPlacementMode(m_ar_session, ar_config,
 //                                      AR_INSTANT_PLACEMENT_MODE_DISABLED);
 //   }
+    m_is_configured = true;
+
   ERR_FAIL_NULL(ar_config);
   ERR_FAIL_COND(ArSession_configure(m_ar_session, ar_config) == AR_SUCCESS);
   ArConfig_destroy(ar_config);
+
 }
 
 // void ARCoreInterface::make_anchors_stale() {

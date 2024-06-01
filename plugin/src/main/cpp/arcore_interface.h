@@ -109,6 +109,8 @@ namespace godot {
         bool m_depthColorVisualizationEnabled;
         bool m_is_instant_placement_enabled;
 
+        bool m_is_configured;
+
         // void make_anchors_stale();
 
         // void remove_stale_anchors();

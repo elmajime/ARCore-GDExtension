@@ -26,6 +26,31 @@ func _ready():
 	ARCoreGDExtension.start_ar()
 
 
+	#ARCoreGDExtension.enable_depth_estimation(true)
+	#ARCoreGDExtension.show_depth_map(true)
+	#ARCoreGDExtension.enable_plane_detection(true)
+
+	#ARCoreGDExtension.set_depth_color_mapping(2.0, 65.0)
+	#ARCoreGDExtension.set_depth_color_mapping(1.0, 1.0)
+	
+
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	pass
+	var screen_size = DisplayServer.screen_get_size()
+	print("MCT_screen_size" + str(screen_size.x) + ", " + str(screen_size.y))
+
+
+func _on_node_2d_estimate_depthmap_toggled(toggled):
+	ARCoreGDExtension.enable_depth_estimation(toggled)
+
+func _on_node_2d_show_depthmap_toggled(toggled):
+	ARCoreGDExtension.show_depth_map(toggled)
+	
+	
+func _on_node_2d_far_changed(value):
+	ARCoreGDExtension.set_depth_color_mapping(1.0, value)
+
+
+func _on_node_2d_planes_toggled(toggled):
+	ARCoreGDExtension.enable_plane_detection(toggled)
+

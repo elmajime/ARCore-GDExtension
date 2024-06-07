@@ -311,3 +311,10 @@ void PlaneRenderer::draw(ArSession& p_ar_session)
 
     ArTrackableList_destroy(plane_list); //! Maxime: Might need to change that
 }
+
+void PlaneRenderer::clear() {
+    if (get_root_node() && m_planes_node != nullptr) {
+        get_root_node()->remove_child(m_planes_node);
+        m_planes_node = nullptr;
+    }
+}

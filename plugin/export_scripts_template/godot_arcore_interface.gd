@@ -20,7 +20,22 @@ func start_ar():
 	else:
 		print("Interface was not instantiated")
 
+func enable_depth_estimation(enable):
+	if arcore_interface:
+		arcore_interface.enable_depth_estimation(enable)
 
+func show_depth_map(enable):
+	if arcore_interface:
+		arcore_interface.show_depth_map(enable)
+
+func set_depth_color_mapping(mid_depth_meters, max_depth_meters):
+	if arcore_interface:
+		arcore_interface.set_depth_color_mapping(mid_depth_meters, max_depth_meters)
+
+func enable_plane_detection(enable):
+	if arcore_interface:
+		arcore_interface.enable_plane_detection(enable)
+		
 func _enter_tree():
 	arcore_interface = ARCoreInterface.new()
 	if arcore_interface:

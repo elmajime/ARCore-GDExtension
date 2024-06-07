@@ -67,6 +67,11 @@ namespace godot {
 
         virtual void notification(int p_what);
 
+        void enable_depth_estimation(bool p_enable);
+        void show_depth_map(bool p_enable);
+        void enable_plane_detection(bool p_enable);
+        void set_depth_color_mapping(float p_mid_depth_meters, float p_max_depth_meters);
+
         bool isDepthSupported();
 
     private:
@@ -107,9 +112,9 @@ namespace godot {
         int32_t m_plane_count;
 
         bool m_depthColorVisualizationEnabled;
+        bool m_enable_depth_estimation;
+        bool m_enable_plane_detection;
         bool m_is_instant_placement_enabled;
-
-        bool m_is_configured;
 
         // void make_anchors_stale();
 

@@ -1,0 +1,93 @@
+[gd_scene load_steps=2 format=3 uid="uid://cglxfqvt03e63"]
+
+[ext_resource type="Script" path="res://ui.gd" id="1_gq1yt"]
+
+[node name="Node2D" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_gq1yt")
+
+[node name="Scale" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 45.0
+offset_top = 18.0
+offset_right = 85.0
+offset_bottom = 58.0
+scale = Vector2(2.17725, 2.17725)
+
+[node name="FarSlider" type="HSlider" parent="Scale"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 14.0
+offset_right = 208.0
+offset_bottom = 30.0
+max_value = 8.0
+
+[node name="FarLabel" type="Label" parent="Scale"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 40.0
+offset_right = 60.0
+offset_bottom = 63.0
+text = "Far:"
+
+[node name="FarValue" type="Label" parent="Scale"]
+layout_mode = 0
+offset_left = 64.0
+offset_top = 38.0
+offset_right = 104.0
+offset_bottom = 61.0
+text = "val"
+
+[node name="EstimateDepthmap" type="CheckButton" parent="Scale"]
+layout_mode = 0
+offset_left = 157.0
+offset_top = 88.0
+offset_right = 201.0
+offset_bottom = 112.0
+
+[node name="EstimateDistance" type="Label" parent="Scale/EstimateDepthmap"]
+layout_mode = 0
+offset_left = -146.0
+offset_top = -2.0
+offset_right = -9.0
+offset_bottom = 21.0
+text = "Estimate distance
+"
+
+[node name="SchowDepthmap" type="CheckButton" parent="Scale"]
+layout_mode = 0
+offset_left = 162.0
+offset_top = 135.0
+offset_right = 206.0
+offset_bottom = 159.0
+
+[node name="ShowDepthmap" type="Label" parent="Scale/SchowDepthmap"]
+layout_mode = 0
+offset_left = -150.0
+offset_top = -3.0
+offset_right = -13.0
+offset_bottom = 20.0
+text = "Show depthmap
+"
+
+[node name="PlaneDection" type="CheckButton" parent="Scale/SchowDepthmap"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 45.0
+offset_right = 45.0
+offset_bottom = 69.0
+
+[node name="ShowPlanes" type="Label" parent="Scale/SchowDepthmap/PlaneDection"]
+layout_mode = 0
+offset_left = -150.0
+offset_top = -3.0
+offset_right = -13.0
+offset_bottom = 20.0
+text = "Plane detection
+"
+
+[connection signal="value_changed" from="Scale/FarSlider" to="." method="_on_far_slider_value_changed"]
+[connection signal="toggled" from="Scale/EstimateDepthmap" to="." method="_on_estimate_depthmap_toggled"]
+[connection signal="toggled" from="Scale/SchowDepthmap" to="." method="_on_schow_depthmap_toggled"]
+[connection signal="toggled" from="Scale/SchowDepthmap/PlaneDection" to="." method="_on_plane_dection_toggled"]

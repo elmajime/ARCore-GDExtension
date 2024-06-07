@@ -15,6 +15,10 @@ void ARCoreInterface::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("_resume"), &ARCoreInterface::_resume);
     ClassDB::bind_method(D_METHOD("_pause"), &ARCoreInterface::_pause);
+    ClassDB::bind_method(D_METHOD("enable_depth_estimation"), &ARCoreInterface::enable_depth_estimation);
+    ClassDB::bind_method(D_METHOD("show_depth_map"), &ARCoreInterface::show_depth_map);
+    ClassDB::bind_method(D_METHOD("set_depth_color_mapping"), &ARCoreInterface::set_depth_color_mapping);
+    ClassDB::bind_method(D_METHOD("enable_plane_detection"), &ARCoreInterface::enable_plane_detection);
 }
 
 ARCoreInterface::ARCoreInterface()
@@ -31,8 +35,9 @@ ARCoreInterface::ARCoreInterface()
     m_plane_count = 0;
     m_is_instant_placement_enabled = false;
     m_depthColorVisualizationEnabled = false;
+    m_enable_depth_estimation = false;
+    m_enable_plane_detection = false;
     m_projection.set_perspective(60.0, 1.0, m_z_near, m_z_far, false); // this is just a default, will be changed by ARCore
-    m_is_configured = false;
 }
 ARCoreInterface::~ARCoreInterface()
 {
@@ -86,6 +91,34 @@ int32_t ARCoreInterface::_get_camera_feed_id() const
         return m_background_renderer.getFeed()->get_id();
     } else {
         return 0;
+    }
+}
+
+
+void ARCoreInterface::enable_depth_estimation(bool p_enable)
+{
+    m_enable_depth_estimation = p_enable;
+    configureSession();
+}
+
+void ARCoreInterface::show_depth_map(bool p_enable)
+{
+    godot::Ref<godot::CameraFeed> feed = m_background_renderer.getFeed();
+    if (feed.is_valid()) {
+        feed->set_display_depthmap(p_enable);
+    }
+}
+
+void ARCoreInterface::enable_plane_detection(bool p_enable) {
+    m_enable_plane_detection = p_enable;
+}
+
+void ARCoreInterface::set_depth_color_mapping(float p_mid_depth_meters, float p_max_depth_meters)
+{
+    godot::Ref<godot::CameraFeed> feed = m_background_renderer.getFeed();
+    if (feed.is_valid())
+    {
+        feed->set_depthmap_display_mapping(p_mid_depth_meters, p_max_depth_meters);
     }
 }
 
@@ -610,9 +643,7 @@ void ARCoreInterface::_process()
     ArSession_isDepthModeSupported(m_ar_session, AR_DEPTH_MODE_AUTOMATIC,
                                  &is_depth_supported);
 
-    //! Maxime: see how we can do this
-    if (is_depth_supported) {
-    //     depth_texture_.UpdateWithDepthImageOnGlThread(*m_ar_session, *m_ar_frame);
+    if (is_depth_supported && m_enable_depth_estimation) {
         godot::Ref<godot::CameraFeed> feed = m_background_renderer.getFeed();
 
         ArImage* depthImage = nullptr;
@@ -644,14 +675,17 @@ void ARCoreInterface::_process()
         ArImage_release(depthImage);
 
         feed->set_external_depthmap(array, width, height);
-        feed->set_display_depthmap(true);
         ALOGE("MCT Godot ARCore: sent depth image to godot");
     }
 
     estimateLight();
 
-    m_plane_renderer.draw(*m_ar_session);
-
+    if (m_enable_plane_detection) {
+        m_plane_renderer.draw(*m_ar_session);
+    } else {
+        m_plane_renderer.clear();
+    }
+    
     //! Maxime: see what this is 
     // andy_renderer_.setUseDepthForOcclusion(asset_manager_, useDepthForOcclusion);
 
@@ -722,15 +756,12 @@ bool ARCoreInterface::isDepthSupported()
 }
 
 void ARCoreInterface::configureSession()
-{
-    if (m_is_configured)
-        return;
-        
+{     
   const bool is_depth_supported = isDepthSupported();
 
   ArConfig* ar_config = nullptr;
   ArConfig_create(m_ar_session, &ar_config);
-  if (is_depth_supported) {
+  if (is_depth_supported && m_enable_depth_estimation) {
     ArConfig_setDepthMode(m_ar_session, ar_config, AR_DEPTH_MODE_AUTOMATIC);
   } else {
     ArConfig_setDepthMode(m_ar_session, ar_config, AR_DEPTH_MODE_DISABLED);
@@ -744,7 +775,6 @@ void ARCoreInterface::configureSession()
 //     ArConfig_setInstantPlacementMode(m_ar_session, ar_config,
 //                                      AR_INSTANT_PLACEMENT_MODE_DISABLED);
 //   }
-    m_is_configured = true;
 
   ERR_FAIL_NULL(ar_config);
   ERR_FAIL_COND(ArSession_configure(m_ar_session, ar_config) == AR_SUCCESS);

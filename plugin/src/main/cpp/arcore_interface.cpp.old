@@ -24,7 +24,6 @@ uint32_t ARCoreInterface::_get_capabilities() const {
 }
 
 int32_t ARCoreInterface::_get_camera_feed_id() const {
-    // ALOGE("MCT Godot ARCore: _get_camera_feed_id");
     if (feed.is_valid()) {
         return feed->get_id();
     } else {
@@ -33,7 +32,6 @@ int32_t ARCoreInterface::_get_camera_feed_id() const {
 }
 
 void ARCoreInterface::_bind_methods() {
-    // ALOGE("MCT Godot ARCore: _bind_methods");
     ClassDB::bind_method(D_METHOD("_resume"), &ARCoreInterface::_resume);
     ClassDB::bind_method(D_METHOD("_pause"), &ARCoreInterface::_pause);
 }

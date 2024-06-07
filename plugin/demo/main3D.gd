@@ -14,7 +14,6 @@ func _ready():
 		printerr("MCT Couldn't find plugin " + _plugin_name)
 		
 	print("MCT before initialize_wrapper")
-	_android_plugin.helloWorld()
 	_android_plugin.initializeWrapper()
 	
 	print("MCT called initialize_wrapper")
@@ -36,8 +35,7 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	var screen_size = DisplayServer.screen_get_size()
-	print("MCT_screen_size" + str(screen_size.x) + ", " + str(screen_size.y))
+	pass
 
 
 func _on_node_2d_estimate_depthmap_toggled(toggled):

@@ -86,7 +86,6 @@ uint32_t ARCoreInterface::_get_capabilities() const
 
 int32_t ARCoreInterface::_get_camera_feed_id() const
 {
-    ALOGE("MCT Godot ARCore: _get_camera_feed_id");
     if (m_background_renderer.getFeed().is_valid()) {
         return m_background_renderer.getFeed()->get_id();
     } else {
@@ -130,8 +129,6 @@ bool ARCoreInterface::_is_initialized() const
 
 bool ARCoreInterface::_initialize()
 {
-    ALOGE("MCT Godot ARCore: _initialize");
-
     XRServer *xr_server = XRServer::get_singleton();
     ERR_FAIL_NULL_V(xr_server, false);
 
@@ -140,11 +137,9 @@ bool ARCoreInterface::_initialize()
         // if we fully failed last time, don't try again..
         return false;
     } else if (m_init_status == NOT_INITIALISED) {
-        ALOGV("MCT Godot ARCore: Initialising...");
         m_init_status = START_INITIALISE;
 
         if (m_ar_session == nullptr) {
-            ALOGV("MCT Godot ARCore: Getting environment");
 
             // get some android things
             JNIEnv *env = ARCorePluginWrapper::get_env();
@@ -158,15 +153,11 @@ bool ARCoreInterface::_initialize()
                 return false;
             }
 
-            ALOGV("MCT Godot ARCore: Create ArSession");
-
             if (ArSession_create(env, context, &m_ar_session) != AR_SUCCESS || m_ar_session == nullptr) {
                 ALOGE("Godot ARCore: ARCore couldn't be created.");
                 m_init_status = INITIALISE_FAILED; // don't try again.
                 return false;
             }
-
-            ALOGV("MCT Godot ARCore: Create ArFrame.");
 
             ArFrame_create(m_ar_session, &m_ar_frame);
             if (m_ar_frame == nullptr) {
@@ -192,7 +183,6 @@ bool ARCoreInterface::_initialize()
             // Trigger display rotation
             m_display_rotation = Orientation::UNKNOWN;
 
-            ALOGV("MCT Godot ARCore: Initialised.");
             m_init_status = INITIALISED;
         }
 
@@ -254,20 +244,17 @@ void ARCoreInterface::_uninitialize()
 
 Vector2 ARCoreInterface::_get_render_target_size()
 {
-    // ALOGE("MCT Godot ARCore: _get_render_target_size");
     Vector2 target_size = DisplayServer::get_singleton()->screen_get_size();
     return target_size;
 }
 
 uint32_t ARCoreInterface::_get_view_count()
 {
-    // ALOGE("MCT Godot ARCore: _get_view_count");
     return 1;
 }
 
 Transform3D ARCoreInterface::_get_camera_transform()
 {
-    //ALOGE("MCT Godot ARCore: _get_camera_transform");
     Transform3D transform_for_eye;
 
     XRServer *xr_server = XRServer::get_singleton();
@@ -288,7 +275,6 @@ Transform3D ARCoreInterface::_get_camera_transform()
 
 Transform3D ARCoreInterface::_get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform)
 {
-    //ALOGE("MCT Godot ARCore: _get_transform_for_view");
     Transform3D transform_for_eye;
 
     XRServer *xr_server = XRServer::get_singleton();
@@ -312,7 +298,6 @@ Transform3D ARCoreInterface::_get_transform_for_view(uint32_t p_view, const Tran
 
 PackedFloat64Array ARCoreInterface::_get_projection_for_view(uint32_t p_view, double p_aspect, double p_m_z_near, double p_z_far)
 {
-    //ALOGE("MCT Godot ARCore: _get_projection_for_view");
     PackedFloat64Array arr;
     arr.resize(16); // 4x4 matrix
 
@@ -330,7 +315,6 @@ PackedFloat64Array ARCoreInterface::_get_projection_for_view(uint32_t p_view, do
 
 void ARCoreInterface::_post_draw_viewport(const RID &p_render_target, const Rect2 &p_screen_rect)
 {
-    //ALOGE("MCT Godot ARCore: _post_draw_viewport");
     // We must have a valid render target
     ERR_FAIL_COND(!p_render_target.is_valid());
 
@@ -429,52 +413,6 @@ void ARCoreInterface::estimateLight() {
     ar_light_estimate = nullptr;
 }
 
-// void ARCoreInterface::updateAndRenderPlanes(const glm::mat4& p_projection_mat, const glm::mat4& p_view_mat)
-// {
-//     // Update and render planes.
-//     ArTrackableList* plane_list = nullptr;
-//     ArTrackableList_create(m_ar_session, &plane_list);
-//     ERR_FAIL_NULL(plane_list);
-
-//     ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
-//     ArSession_getAllTrackables(m_ar_session, plane_tracked_type, plane_list);
-
-//     int32_t plane_list_size = 0;
-//     ArTrackableList_getSize(m_ar_session, plane_list, &plane_list_size);
-//     m_plane_count = plane_list_size;
-
-//     ALOGE("MCT Godot ARCore: Planes found %d", m_plane_count);
-
-//     m_plane_renderer.clear(); //! Maxime: find a way to not needing to clear all planes each time
-//     for (int i = 0; i < plane_list_size; ++i) {
-//         ArTrackable* ar_trackable = nullptr;
-//         ArTrackableList_acquireItem(m_ar_session, plane_list, i, &ar_trackable);
-//         ArPlane* ar_plane = ArAsPlane(ar_trackable);
-//         ArTrackingState out_m_tracking_state;
-//         ArTrackable_getTrackingState(m_ar_session, ar_trackable,
-//                                     &out_m_tracking_state);
-
-//         ArPlane* subsume_plane;
-//         ArPlane_acquireSubsumedBy(m_ar_session, ar_plane, &subsume_plane);
-//         if (subsume_plane != nullptr) {
-//             ArTrackable_release(ArAsTrackable(subsume_plane));
-//             ArTrackable_release(ar_trackable);
-//             continue;
-//         }
-
-//         if (ArTrackingState::AR_TRACKING_STATE_TRACKING != out_m_tracking_state) {
-//             ArTrackable_release(ar_trackable);
-//             continue;
-//         }
-
-//         m_plane_renderer.draw(*m_ar_session, *ar_plane);
-//         ArTrackable_release(ar_trackable);
-//     }
-
-//     ArTrackableList_destroy(plane_list);
-//     plane_list = nullptr;
-// }
-
 godot::Transform3D glm_to_godot_transform(const glm::mat4& glm_matrix) {
     // Extract the basis (3x3 part)
     godot::Basis basis(
@@ -521,42 +459,42 @@ godot::XRInterface::TrackingStatus ar_tracking_state_to_tracking_status(const Ar
             ArCamera_getTrackingFailureReason(&p_ar_session, &p_ar_camera, &camera_tracking_failure_reason);
             switch (camera_tracking_failure_reason) {
                 case AR_TRACKING_FAILURE_REASON_NONE:
-                ALOGE("MCT Godot ARCore: AR_TRACKING_FAILURE_REASON_NONE");
+                ALOGE("Godot ARCore: AR_TRACKING_FAILURE_REASON_NONE");
                     trackingStatus = XRInterface::XR_UNKNOWN_TRACKING;
                     break;
                 case AR_TRACKING_FAILURE_REASON_BAD_STATE:
-                ALOGE("MCT Godot ARCore: AR_TRACKING_FAILURE_REASON_BAD_STATE");
+                ALOGE("Godot ARCore: AR_TRACKING_FAILURE_REASON_BAD_STATE");
                     trackingStatus = XRInterface::XR_INSUFFICIENT_FEATURES; // @TODO add bad state to XRInterface
                     break;
                 case AR_TRACKING_FAILURE_REASON_INSUFFICIENT_LIGHT:
-                ALOGE("MCT Godot ARCore: AR_TRACKING_FAILURE_REASON_INSUFFICIENT_LIGHT");
+                ALOGE("Godot ARCore: AR_TRACKING_FAILURE_REASON_INSUFFICIENT_LIGHT");
                     trackingStatus = XRInterface::XR_INSUFFICIENT_FEATURES; // @TODO add insufficient light to XRInterface
                     break;
                 case AR_TRACKING_FAILURE_REASON_EXCESSIVE_MOTION:
-                ALOGE("MCT Godot ARCore: AR_TRACKING_FAILURE_REASON_EXCESSIVE_MOTION");
+                ALOGE("Godot ARCore: AR_TRACKING_FAILURE_REASON_EXCESSIVE_MOTION");
                     trackingStatus = XRInterface::XR_EXCESSIVE_MOTION;
                     break;
                 case AR_TRACKING_FAILURE_REASON_INSUFFICIENT_FEATURES:
-                ALOGE("MCT Godot ARCore: AR_TRACKING_FAILURE_REASON_INSUFFICIENT_FEATURES");
+                ALOGE("Godot ARCore: AR_TRACKING_FAILURE_REASON_INSUFFICIENT_FEATURES");
                     trackingStatus = XRInterface::XR_INSUFFICIENT_FEATURES;
                     break;
                 case AR_TRACKING_FAILURE_REASON_CAMERA_UNAVAILABLE:
-                ALOGE("MCT Godot ARCore: AR_TRACKING_FAILURE_REASON_CAMERA_UNAVAILABLE");
+                ALOGE("Godot ARCore: AR_TRACKING_FAILURE_REASON_CAMERA_UNAVAILABLE");
                     trackingStatus = XRInterface::XR_INSUFFICIENT_FEATURES; // @TODO add no camera to XRInterface
                     break;
                 default:
-                ALOGE("MCT Godot ARCore: XR_UNKNOWN_TRACKING");
+                ALOGE("Godot ARCore: XR_UNKNOWN_TRACKING");
                     trackingStatus = XRInterface::XR_UNKNOWN_TRACKING;
                     break;
             };
 
             break;
         case AR_TRACKING_STATE_STOPPED:
-            ALOGE("MCT Godot ARCore: AR_TRACKING_STATE_STOPPED");
+            ALOGE("Godot ARCore: AR_TRACKING_STATE_STOPPED");
             trackingStatus = XRInterface::XR_NOT_TRACKING;
             break;
         default:
-            ALOGE("MCT Godot ARCore: XR_UNKNOWN_TRACKING");
+            ALOGE("Godot ARCore: XR_UNKNOWN_TRACKING");
             trackingStatus = XRInterface::XR_UNKNOWN_TRACKING;
             break;
     };
@@ -571,7 +509,6 @@ void ARCoreInterface::_process()
         // not yet initialised so....
         return;
     } else if ((m_ar_session == nullptr) or (m_background_renderer.getFeed().is_null())) {
-        ALOGE("MCT Godot ARCore: _process don't have a session yet so...");
         // don't have a session yet so...
         return;
     }
@@ -633,9 +570,7 @@ void ARCoreInterface::_process()
     ArCamera_release(ar_camera);
 
     // If the camera isn't tracking don't bother rendering other objects.
-    //! Maxime: this might not be usefull in our case
     if (camera_m_tracking_state != AR_TRACKING_STATE_TRACKING) {
-        ALOGE("MCT Godot ARCore: not AR_TRACKING_STATE_TRACKING");
         return;
     }
 
@@ -648,11 +583,10 @@ void ARCoreInterface::_process()
 
         ArImage* depthImage = nullptr;
         if (ArFrame_acquireDepthImage16Bits(m_ar_session, m_ar_frame, &depthImage) != AR_SUCCESS) {
-            ALOGE("MCT Godot ARCore: Error: Failed to acquire depth image");
+            ALOGE("Godot ARCore: Error: Failed to acquire depth image");
             return;
         }
 
-        ALOGE("MCT Godot ARCore: Acquired depth image");
         int32_t width, height;
         ArImage_getWidth(m_ar_session, depthImage, &width);
         ArImage_getHeight(m_ar_session, depthImage, &height);
@@ -665,17 +599,12 @@ void ARCoreInterface::_process()
         array.resize(width*height*2); // 2 bytes per pixel (16-bit)
 
         for (int i = 0; i < width * height * 2; ++i) {
-            // uint16_t depth_value = *(depthData + i*sizeof(uint8_t));
-            // // array[i * 2] = depth_value & 0xFF; // Low byte
-            // // array[i * 2 + 1] = (depth_value >> 8) & 0xFF; // High byte
-            // array.encode_u16(i*2, depth_value);
             array[i] = *(depthData + i*sizeof(uint8_t));
         }
 
         ArImage_release(depthImage);
 
         feed->set_external_depthmap(array, width, height);
-        ALOGE("MCT Godot ARCore: sent depth image to godot");
     }
 
     estimateLight();
@@ -767,7 +696,7 @@ void ARCoreInterface::configureSession()
     ArConfig_setDepthMode(m_ar_session, ar_config, AR_DEPTH_MODE_DISABLED);
   }
 
-//! Maxime : todo
+//! Maxime : todo ?
 //   if (m_is_instant_placement_enabled) {
 //     ArConfig_setInstantPlacementMode(m_ar_session, ar_config,
 //                                      AR_INSTANT_PLACEMENT_MODE_LOCAL_Y_UP);
@@ -782,6 +711,7 @@ void ARCoreInterface::configureSession()
 
 }
 
+//! Maxime what about this ?
 // void ARCoreInterface::make_anchors_stale() {
 //     for (const auto &anchor: anchors) {
 //         anchor.second->stale = true;

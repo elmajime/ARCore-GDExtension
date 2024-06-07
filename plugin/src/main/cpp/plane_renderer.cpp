@@ -128,7 +128,6 @@ void PlaneRenderer::update_or_create_plane_node(const size_t& plane_guid, ArSess
         ArPose* center_pose = get_plane_center_pose(ar_session, ar_plane);
         Transform3D transform = ar_pose_to_godot_transform(ar_session, center_pose);
         polygon_node->set_transform(transform);
-        ALOGE("MCT Godot ARCore: Updating plane: %ld", plane_guid);
     } 
     else
     {
@@ -143,43 +142,8 @@ void PlaneRenderer::update_or_create_plane_node(const size_t& plane_guid, ArSess
 
         m_planes_node->add_child(polygon_node);
         m_plane_nodes[plane_guid] = polygon_node;
-        ALOGE("MCT Godot ARCore: Creating plane: %ld", plane_guid);
-        ALOGE("MCT Godot ARCore: parent_node children : %d", m_planes_node->get_child_count());
     }
 }
-
-// #define CREATE_ARRAY_MESH
-
-// // Main function to generate the mesh from ArPlane and add it to the scene
-// void generate_and_add_mesh(ArSession* ar_session, ArPlane* ar_plane, Node* parent_node) {
-//     std::vector<float> boundary = get_plane_boundary(ar_session, ar_plane);
-//     Array vertices = convert_boundary_to_vertices(boundary);
-
-//     Node3D* child;
-//     // #ifdef CREATE_ARRAY_MESH
-//     //     Ref<ArrayMesh> mesh = create_polygon_mesh(vertices);
-//     //     MeshInstance3D* mesh_instance = create_mesh_instance(mesh);
-//     //     mesh_instance->set_name("ARPlane");
-//     //     child = mesh_instance;
-//     // #else
-//         child = create_csg_polygon(vertices);
-//     // #endif
-
-//     // Get the center pose of the plane
-//     ArPose* center_pose = get_plane_center_pose(ar_session, ar_plane);
-//     Transform3D transform = ar_pose_to_godot_transform(ar_session, center_pose);
-
-//     // Apply the transform to the CSGPolygon3D node
-//     child->set_transform(transform);
-
-//     parent_node->add_child(child);
-//     ALOGE("MCT Godot ARCore: parent_node children : %d", parent_node->get_child_count());
-//     ALOGE("MCT Godot ARCore: last plane nb vertices : %ld", vertices.size());
-
-//     Vector3 min = vertices.min();
-//     Vector3 max = vertices.max();
-//     ALOGE("MCT Godot ARCore: last plane min and max : (%f,%f,%f) (%f,%f,%f)", min.x, min.y, min.z, max.x, max.y, max.z);
-// }
 
 Node* get_root_node() {
     // Get the SceneTree singleton
@@ -208,32 +172,11 @@ Node* get_root_node() {
 //     }
 // }
 
-// // Function to handle the state of a detected plane
-// void handle_plane_state(const std::string& plane_guid, ArSession* ar_session, ArPlane* ar_plane) {
-//     ArTrackingState plane_tracking_state;
-//     ArPlane_getTrackingState(ar_session, ar_plane, &plane_tracking_state);
-//     if (plane_tracking_state == AR_TRACKING_STATE_TRACKING) {
-//         // Plane is still tracked, update its representation
-//         update_or_create_plane_node(plane_guid, ar_session, ar_plane);
-//     } else {
-//         // Plane is lost, remove its representation
-//         remove_plane_node(plane_guid);
-//     }
-// }
-
 size_t get_uid(ArSession* ar_session, const std::vector<float> &boundary)
 {
     size_t boundary_hash = hash_vector(boundary);
     return boundary_hash;
 }
-
-// void on_plane_detected(ArSession* ar_session, ArPlane* ar_plane) {
-//     // Convert the GUID to a std::string for convenience
-//     std::string plane_guid = get_uid(ar_session, ar_plane);
-
-//     // Check if the plane has been detected before
-//     handle_plane_detection(plane_guid);
-// }
 
 void PlaneRenderer::draw(ArSession& p_ar_session)
 {
@@ -253,9 +196,6 @@ void PlaneRenderer::draw(ArSession& p_ar_session)
 
     int32_t plane_list_size = 0;
     ArTrackableList_getSize(&p_ar_session, plane_list, &plane_list_size);
-    // m_plane_count = plane_list_size;
-
-    ALOGE("MCT Godot ARCore: Planes found %d", plane_list_size);
 
     std::vector<size_t> detected_guid;
     for (int i = 0; i < plane_list_size; ++i) {

@@ -10,10 +10,10 @@ config_version=5
 
 [application]
 
-config/name="GDExtension Android Plugin Demo"
+config/name="Godot_ARCore_example"
 run/main_scene="res://main3D.tscn"
 config/features=PackedStringArray("4.2", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://Godot_ARCoreExample.png"
 
 [autoload]
 

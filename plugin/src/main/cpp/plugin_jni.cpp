@@ -13,16 +13,8 @@
 #define JNI_CLASS_NAME GDExtensionAndroidPluginARCore
 
 extern "C" {
-    JNIEXPORT void JNICALL JNI_METHOD(helloWorld)(JNIEnv *env, jobject) {
-        ALOGE("MCT Godot ARCore: start helloWorld.");
-        // godot::UtilityFunctions::print("Hello GDExtension ARCore World!");
-        ALOGE("MCT Godot ARCore: end helloWorld.");
-    }
-
     JNIEXPORT void JNICALL JNI_METHOD(initializeWrapper)(JNIEnv *env, jobject activity) {
-        ALOGE("MCT Godot ARCore: start initializeWrapper.");
         ARCorePluginWrapper::initialize_wrapper(env, activity);
-        ALOGE("MCT Godot ARCore: end initializeWrapper.");
     }
 
     JNIEXPORT void JNICALL JNI_METHOD(uninitializeWrapper)(JNIEnv *env, jobject) {

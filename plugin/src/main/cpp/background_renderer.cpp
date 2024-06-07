@@ -19,7 +19,7 @@ void BackgroundRenderer::initialize(int p_width, int p_height)
 {
     // create our camera feed
     if (m_feed.is_null()) {
-        ALOGV("MCT Godot ARCore: Creating camera feed...");
+        ALOGV("Godot ARCore: Creating camera feed...");
 
         m_feed.instantiate();
         m_feed->set_name("ARCore");
@@ -29,7 +29,7 @@ void BackgroundRenderer::initialize(int p_width, int p_height)
         if (cs != nullptr) {
             cs->add_feed(m_feed);
 
-            ALOGV("MCT Godot ARCore: Feed %d added", m_feed->get_id());
+            ALOGV("Godot ARCore: Feed %d added", m_feed->get_id());
         }
     }
 
@@ -41,8 +41,6 @@ void BackgroundRenderer::initialize(int p_width, int p_height)
         // Also this is a YCbCr texture, not RGB, should probably add a format for that some day :)
         m_feed->set_external(p_width, p_height);
         m_camera_texture_id = m_feed->get_texture_tex_id(CameraServer::FEED_YCBCR_IMAGE);
-
-        ALOGV("MCT Godot ARCore: Created: %ld", m_camera_texture_id);
     }
 }
 

@@ -24,17 +24,9 @@ ARCorePluginWrapper::ARCorePluginWrapper() {
 ARCorePluginWrapper::~ARCorePluginWrapper() {}
 
 void ARCorePluginWrapper::initialize_wrapper(JNIEnv *p_env, jobject p_activity) {
-    ALOGE("MCT Godot ARCore: inside initialize_wrapper");
 
     env = p_env;
     
-    // arcore_plugin_instance = p_env->NewGlobalRef(p_arcore_plugin);
-    // ALOG_ASSERT(arcore_plugin_instance, "Invalid jobject value.");
-
-    // jclass arcore_plugin_class = p_env->GetObjectClass(arcore_plugin_instance);
-    // ALOG_ASSERT(arcore_plugin_class, "Invalid jclass value.");
-
-    // godot_instance = p_env->NewGlobalRef(p_godot_instance);
     activity = p_env->NewGlobalRef(p_activity);
 
     // get info about our Godot class so we can get pointers and stuff...
@@ -42,7 +34,7 @@ void ARCorePluginWrapper::initialize_wrapper(JNIEnv *p_env, jobject p_activity) 
     if (godot_class) {
         godot_class = (jclass)p_env->NewGlobalRef(godot_class);
     } else {
-        ALOGE("MCT Godot ARCore: did not find org/godotengine/godot/Godot");
+        ALOGE("Godot ARCore: did not find org/godotengine/godot/Godot");
         // this is a pretty serious fail.. bail... pointers will stay 0
         return;
     }
@@ -50,16 +42,16 @@ void ARCorePluginWrapper::initialize_wrapper(JNIEnv *p_env, jobject p_activity) 
     if (activity_class) {
         activity_class = (jclass)p_env->NewGlobalRef(activity_class);
     } else {
-        ALOGE("MCT Godot ARCore: did not find android/app/Activity");
+        ALOGE("Godot ARCore: did not find android/app/Activity");
         // this is a pretty serious fail.. bail... pointers will stay 0
         return;
     }
 
+    //! Maxime something similar to get the display orientation ?
     // // get some Godot method pointers...
     // _get_surface = p_env->GetMethodID(godot_class, "getSurface", "()Landroid/view/Surface;");
     // _is_activity_resumed = p_env->GetMethodID(godot_class, "isActivityResumed", "()Z");
     // _get_display_rotation = p_env->GetMethodID(godot_class, "getDisplayRotation", "()I");
-    ALOGE("MCT Godot ARCore: end initialize_wrapper");
 }
 
 void ARCorePluginWrapper::uninitialize_wrapper(JNIEnv *env) {

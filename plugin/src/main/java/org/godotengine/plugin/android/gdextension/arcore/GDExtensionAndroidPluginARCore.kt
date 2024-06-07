@@ -15,10 +15,9 @@ class GDExtensionAndroidPluginARCore(godot: Godot): GodotPlugin(godot) {
 
         init {
             try {
-                Log.v(TAG, "MCT Loading ${BuildConfig.GODOT_PLUGIN_NAME} library")
                 System.loadLibrary(BuildConfig.GODOT_PLUGIN_NAME)
             } catch (e: UnsatisfiedLinkError) {
-                Log.e(TAG, "MCT Unable to load ${BuildConfig.GODOT_PLUGIN_NAME} shared library")
+                Log.e(TAG, "Unable to load ${BuildConfig.GODOT_PLUGIN_NAME} shared library")
             }
         }
     }
@@ -39,8 +38,6 @@ class GDExtensionAndroidPluginARCore(godot: Godot): GodotPlugin(godot) {
      *
      * Print a 'Hello World' message to the logcat.
      */
-    @UsedByGodot
-    private external fun helloWorld()
 
     @UsedByGodot
     private external fun initializeWrapper()

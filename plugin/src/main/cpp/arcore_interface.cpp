@@ -16,9 +16,24 @@ void ARCoreInterface::_bind_methods()
     ClassDB::bind_method(D_METHOD("_resume"), &ARCoreInterface::_resume);
     ClassDB::bind_method(D_METHOD("_pause"), &ARCoreInterface::_pause);
     ClassDB::bind_method(D_METHOD("enable_depth_estimation"), &ARCoreInterface::enable_depth_estimation);
+    ClassDB::bind_method(D_METHOD("is_depth_supported"), &ARCoreInterface::is_depth_supported);
     ClassDB::bind_method(D_METHOD("show_depth_map"), &ARCoreInterface::show_depth_map);
-    ClassDB::bind_method(D_METHOD("set_depth_color_mapping"), &ARCoreInterface::set_depth_color_mapping);
-    ClassDB::bind_method(D_METHOD("enable_plane_detection"), &ARCoreInterface::enable_plane_detection);
+    ClassDB::bind_method(D_METHOD("set_max_depth_meters"), &ARCoreInterface::set_max_depth_meters);
+    ClassDB::bind_method(D_METHOD("enable_vertical_plane_detection"), &ARCoreInterface::enable_vertical_plane_detection);
+    ClassDB::bind_method(D_METHOD("enable_horizontal_plane_detection"), &ARCoreInterface::enable_horizontal_plane_detection);
+    ClassDB::bind_method(D_METHOD("enable_instant_placement"), &ARCoreInterface::enable_instant_placement);
+    ClassDB::bind_method(D_METHOD("getHitPose"), &ARCoreInterface::getHitPose);
+    ClassDB::bind_method(D_METHOD("getHitRayPose"), &ARCoreInterface::getHitRayPose);
+    ClassDB::bind_method(D_METHOD("enable_images_detection"), &ARCoreInterface::enable_images_detection);
+    ClassDB::bind_method(D_METHOD("set_node_images_mapping"), &ARCoreInterface::set_node_images_mapping);
+    ClassDB::bind_method(D_METHOD("enable_point_cloud_detection"), &ARCoreInterface::enable_point_cloud_detection);
+    ClassDB::bind_method(D_METHOD("switch_orientation"), &ARCoreInterface::switch_orientation);
+    ClassDB::bind_method(D_METHOD("enable_light_estimation"), &ARCoreInterface::enable_light_estimation);
+    ClassDB::bind_method(D_METHOD("get_light_color_correction"), &ARCoreInterface::get_light_color_correction);
+    ClassDB::bind_method(D_METHOD("get_light_main_hdr_direction"), &ARCoreInterface::get_light_main_hdr_direction);
+    ClassDB::bind_method(D_METHOD("get_light_main_hdr_intensity"), &ARCoreInterface::get_light_main_hdr_intensity);
+    ClassDB::bind_method(D_METHOD("getNear"), &ARCoreInterface::getNear);
+    ClassDB::bind_method(D_METHOD("getFar"), &ARCoreInterface::getFar);
 }
 
 ARCoreInterface::ARCoreInterface()
@@ -33,10 +48,13 @@ ARCoreInterface::ARCoreInterface()
     m_z_near = 0.01;
     m_z_far = 1000.0;
     m_plane_count = 0;
-    m_is_instant_placement_enabled = false;
-    m_depthColorVisualizationEnabled = false;
     m_enable_depth_estimation = false;
-    m_enable_plane_detection = false;
+    m_enable_vertical_plane_detection = false;
+    m_enable_horizontal_plane_detection = false;
+    m_enable_instant_placement = false;
+    m_enable_images_detection = false;
+    m_enable_point_cloud_detection = false;
+    m_enable_light_estimation = false;
     m_projection.set_perspective(60.0, 1.0, m_z_near, m_z_far, false); // this is just a default, will be changed by ARCore
 }
 ARCoreInterface::~ARCoreInterface()
@@ -100,24 +118,185 @@ void ARCoreInterface::enable_depth_estimation(bool p_enable)
     configureSession();
 }
 
+bool ARCoreInterface::is_depth_supported()
+{
+  int32_t is_supported = 0;
+  ArSession_isDepthModeSupported(m_ar_session, AR_DEPTH_MODE_AUTOMATIC,
+                                 &is_supported);
+  return is_supported;
+}
+
 void ARCoreInterface::show_depth_map(bool p_enable)
 {
-    godot::Ref<godot::CameraFeed> feed = m_background_renderer.getFeed();
-    if (feed.is_valid()) {
-        feed->set_display_depthmap(p_enable);
+    if (m_enable_depth_estimation) {
+        godot::Ref<godot::CameraFeed> feed = m_background_renderer.getFeed();
+        if (feed.is_valid()) {
+            feed->set_should_display_depthmap(p_enable);
+        }
+    } else {
+        ALOGW("Godot ARCore: show_depth_map called but depth estimation is not enabled");
     }
 }
 
-void ARCoreInterface::enable_plane_detection(bool p_enable) {
-    m_enable_plane_detection = p_enable;
+void ARCoreInterface::set_max_depth_meters(float p_max_depth_meters)
+{
+    if (m_enable_depth_estimation) {
+        godot::Ref<godot::CameraFeed> feed = m_background_renderer.getFeed();
+        if (feed.is_valid())
+        {
+            feed->set_max_depth_meters(p_max_depth_meters);
+        }
+    } else {
+        ALOGW("Godot ARCore: set_max_depth_meters called but depth estimation is not enabled");
+    }
 }
 
-void ARCoreInterface::set_depth_color_mapping(float p_mid_depth_meters, float p_max_depth_meters)
+void ARCoreInterface::enable_vertical_plane_detection(bool p_enable) {
+    m_enable_vertical_plane_detection = p_enable;
+    configureSession();
+}
+
+void ARCoreInterface::enable_horizontal_plane_detection(bool p_enable) {
+    m_enable_horizontal_plane_detection = p_enable;
+    configureSession();
+}
+
+void ARCoreInterface::enable_instant_placement(bool p_enable)
 {
-    godot::Ref<godot::CameraFeed> feed = m_background_renderer.getFeed();
-    if (feed.is_valid())
-    {
-        feed->set_depthmap_display_mapping(p_mid_depth_meters, p_max_depth_meters);
+    m_enable_instant_placement = p_enable;
+    configureSession();
+}
+
+void ARCoreInterface::enable_images_detection(bool p_enable)
+{
+    m_enable_images_detection = p_enable;
+    configureSession();
+}
+
+void ARCoreInterface::enable_point_cloud_detection(bool p_enable) {
+    m_enable_point_cloud_detection = p_enable;
+    configureSession();
+}
+
+void ARCoreInterface::switch_orientation(bool p_vertical) {
+    m_vertical_orientation = p_vertical;
+    configureSession();
+}
+
+void ARCoreInterface::enable_light_estimation(bool p_enable) {
+    m_enable_light_estimation = true;
+    configureSession();
+}
+
+Vector4 ARCoreInterface::get_light_color_correction() {
+    Vector4 res (1.f, 1.f, 1.f, 1.f);
+    
+    if (m_enable_light_estimation) {
+        res = m_color_correction;
+    } else {
+        ALOGW("Godot ARCore: get_light_color_correction called but light estimation is not enabled");
+    }
+
+    return res;
+}
+
+Vector3 ARCoreInterface::get_light_main_hdr_direction() {
+    Vector3 res (0.f, 0.f, 0.f);
+
+    if (m_enable_light_estimation) {
+        res = m_light_env_hdr_main_light_direction;
+    } else {
+        ALOGW("Godot ARCore: get_light_color_correction called but light estimation is not enabled");
+    }
+
+    return res;
+}
+
+Vector3 ARCoreInterface::get_light_main_hdr_intensity() {
+    Vector3 res (0.f, 0.f, 0.f);
+
+    if (m_enable_light_estimation) {
+        res = m_light_env_hdr_main_light_intensity;
+    } else {
+        ALOGW("Godot ARCore: get_light_color_correction called but light estimation is not enabled");
+    }
+
+    return res;
+}
+
+
+
+Transform3D ARCoreInterface::getHitPose(float p_pixel_x, float p_pixel_y, float p_approximate_distance_meters) 
+{
+    Transform3D res;
+    if (m_enable_instant_placement) {
+        ArHitResultList *hit_result_list = nullptr;
+        ArFrame_hitTestInstantPlacement(m_ar_session, m_ar_frame, p_pixel_x, p_pixel_y, p_approximate_distance_meters, hit_result_list);
+
+        int32_t size = 0;
+        ArHitResultList_getSize(m_ar_session, hit_result_list, &size);
+        float currentMinDistance = std::numeric_limits<float>::max();
+
+        for (int32_t i = 0; i < size ; ++i) {
+            ArHitResult* hit_result = nullptr;
+            ArHitResultList_getItem(m_ar_session, hit_result_list, i, hit_result);
+            ArPose* pose = nullptr;
+            ArHitResult_getHitPose(m_ar_session, hit_result, pose);
+            float distance = std::numeric_limits<float>::max();
+            ArHitResult_getDistance(m_ar_session, hit_result, &distance);
+
+            if (distance < currentMinDistance) {
+                glm::mat4 mat4;
+                ArPose_getMatrix(m_ar_session, pose, glm::value_ptr(mat4));
+                res = glm_to_godot_transform(mat4);
+            }
+        }
+    } else {
+        ALOGW("Godot ARCore: getHitPose called but instant placement is not enabled");
+    }
+
+    return res;
+}
+
+Transform3D ARCoreInterface::getHitRayPose(const Vector3& p_origin, const Vector3& p_direction) 
+{
+    Transform3D res;
+    if (m_enable_instant_placement) {
+        glm::vec3 ray_origin_3(p_origin.x, p_origin.y, p_origin.z);
+        glm::vec3 ray_direction_3(p_origin.x, p_origin.y, p_origin.z);
+        ArHitResultList* hit_result_list = nullptr;
+        ArFrame_hitTestRay(m_ar_session, m_ar_frame, glm::value_ptr(ray_origin_3), glm::value_ptr(ray_direction_3), hit_result_list);
+        
+        int32_t size = 0;
+        ArHitResultList_getSize(m_ar_session, hit_result_list, &size);
+        float currentMinDistance = std::numeric_limits<float>::max();
+
+        for (int32_t i = 0; i < size ; ++i) {
+            ArHitResult* hit_result = nullptr;
+            ArHitResultList_getItem(m_ar_session, hit_result_list, i, hit_result);
+            ArPose* pose = nullptr;
+            ArHitResult_getHitPose(m_ar_session, hit_result, pose);
+            glm::mat4 mat4;
+            ArPose_getMatrix(m_ar_session, pose, glm::value_ptr(mat4));
+            glm::vec3 target = mat4 * glm::vec4(0.f, 0.f, 0.f, 1.f);
+            float distance = glm::length(target - ray_origin_3);
+
+            if (distance < currentMinDistance) {
+                res = glm_to_godot_transform(mat4);
+            }
+        }
+    } else {
+        ALOGW("Godot ARCore: getHitRayPose called but instant placement is not enabled");
+    }
+    
+    return res;
+}
+
+void ARCoreInterface::set_node_images_mapping(const Dictionary& in_nodeImagesMap) {
+    if (m_enable_images_detection) {
+        m_instances_renderer.set_node_images_mapping(in_nodeImagesMap);
+    } else {
+        ALOGW("Godot ARCore: set_node_images_mapping called but images detection is not enabled");
     }
 }
 
@@ -327,68 +506,72 @@ void ARCoreInterface::_post_draw_viewport(const RID &p_render_target, const Rect
     add_blit(p_render_target, src_rect, dst_rect, false, 0, false, Vector2(), 0, 0, 0.0, 1.0);
 }
 
-void ARCoreInterface::handleScreenOrientationChanges() 
-{
-    DisplayServer::ScreenOrientation orientation = DisplayServer::get_singleton()->screen_get_orientation(DisplayServer::get_singleton()->get_primary_screen());
-    Orientation display_rotation = Orientation::UNKNOWN;
+// void ARCoreInterface::handleScreenOrientationChanges() 
+// {
+//     DisplayServer::ScreenOrientation orientation = DisplayServer::get_singleton()->screen_get_orientation(DisplayServer::get_singleton()->get_primary_screen());
+//     Orientation display_rotation = Orientation::UNKNOWN;
 
-    switch (orientation)
-    {
-    case DisplayServer::SCREEN_LANDSCAPE:
-        //ALOGE("MCT Godot ARCore: in SCREEN_LANDSCAPE mode");
-        display_rotation = Orientation::ROTATION_90;
-        break;
-    case DisplayServer::SCREEN_PORTRAIT:
-        //ALOGE("MCT Godot ARCore: in SCREEN_PORTRAIT mode");
-        display_rotation = Orientation::ROTATION_0;
-        break;
+//     switch (orientation)
+//     {
+//     case DisplayServer::SCREEN_LANDSCAPE:
+//         // ALOGE("MCT Godot ARCore: in SCREEN_LANDSCAPE mode");
+//         display_rotation = Orientation::ROTATION_90;
+//         break;
+//     case DisplayServer::SCREEN_PORTRAIT:
+//         // ALOGE("MCT Godot ARCore: in SCREEN_PORTRAIT mode");
+//         display_rotation = Orientation::ROTATION_0;
+//         break;
 
-    case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
-        //ALOGE("MCT Godot ARCore: in SCREEN_REVERSE_LANDSCAPE mode");
-        display_rotation = Orientation::ROTATION_270;
-        break;
+//     case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+//         // ALOGE("MCT Godot ARCore: in SCREEN_REVERSE_LANDSCAPE mode");
+//         display_rotation = Orientation::ROTATION_270;
+//         break;
 
-    case DisplayServer::SCREEN_REVERSE_PORTRAIT:
-        //ALOGE("MCT Godot ARCore: in SCREEN_REVERSE_PORTRAIT mode");
-        display_rotation = Orientation::ROTATION_180;
-        break;
+//     case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+//         // ALOGE("MCT Godot ARCore: in SCREEN_REVERSE_PORTRAIT mode");
+//         display_rotation = Orientation::ROTATION_180;
+//         break;
 
-    case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
-        //ALOGE("MCT Godot ARCore: in SCREEN_SENSOR_LANDSCAPE mode");
-        display_rotation = Orientation::ROTATION_90;
-        break;
+//     case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+//         // ALOGE("MCT Godot ARCore: in SCREEN_SENSOR_LANDSCAPE mode");
+//         display_rotation = Orientation::ROTATION_90;
+//         break;
 
-    case DisplayServer::SCREEN_SENSOR_PORTRAIT:
-        //ALOGE("MCT Godot ARCore: in SCREEN_SENSOR_PORTRAIT mode");
-        display_rotation = Orientation::ROTATION_0;
-        break;
+//     case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+//         // ALOGE("MCT Godot ARCore: in SCREEN_SENSOR_PORTRAIT mode");
+//         display_rotation = Orientation::ROTATION_0;
+//         break;
 
-    case DisplayServer::SCREEN_SENSOR:
-        ALOGE("Godot ARCore: SCREEN_SENSOR mode not handle yet");
-        display_rotation = Orientation::UNKNOWN; //TODO
-        break;
-    default:
-        break;
-    }
-    //! Maxime: Todo: Correctly handle orientation changes
-    // display_rotation = Orientation::VERTICAL;
+//     case DisplayServer::SCREEN_SENSOR:
+//         // ALOGE("Godot ARCore: SCREEN_SENSOR mode not handle yet");
+//         display_rotation = Orientation::UNKNOWN; //TODO
+//         break;
+//     default:
+//         // ALOGE("MCT Godot ARCore: in some other screen orientation mode");
+//         break;
+//     }
+//     //! Maxime: Todo: Correctly handle orientation changes
+//     // display_rotation = Orientation::VERTICAL;
 
-    if (m_display_rotation != display_rotation)
-    {
-        m_display_rotation = display_rotation;
-        if (m_display_rotation == Orientation::ROTATION_90 || m_display_rotation == Orientation::ROTATION_270)
-        {
-            int tmp = m_height;
-            m_height = m_width;
-            m_width = tmp;
-        }
+//     Vector2i screen_size = DisplayServer::get_singleton()->screen_get_size();
+//     ALOGE("MCT screen_size = %d, %d", screen_size.x, screen_size.y);
 
-        const int32_t c_ar_core_orientation = (int32_t)(Orientation::ROTATION_90); // For now, only godot's Landscape mode works with ARCore
-        ArSession_setDisplayGeometry(m_ar_session, c_ar_core_orientation, m_width, m_height);
+//     if (m_display_rotation != display_rotation)
+//     {
+//         m_display_rotation = display_rotation;
+//         if (m_display_rotation == Orientation::ROTATION_90 || m_display_rotation == Orientation::ROTATION_270)
+//         {
+//             int tmp = m_height;
+//             m_height = m_width;
+//             m_width = tmp;
+//         }
 
-        ALOGV("MCT Godot ARCore: Window orientation changes to %d (%d, %d)", m_display_rotation, m_width, m_height);
-    }
-}
+//         const int32_t c_ar_core_orientation = (int32_t)(Orientation::ROTATION_90); // For now, only godot's Landscape mode works with ARCore
+//         ArSession_setDisplayGeometry(m_ar_session, c_ar_core_orientation, m_width, m_height);
+
+//         ALOGV("MCT Godot ARCore: Window orientation changes to %d (%d, %d)", m_display_rotation, m_width, m_height);
+//     }
+// }
 
 void ARCoreInterface::estimateLight() {
     // Get light estimation value.
@@ -404,46 +587,22 @@ void ARCoreInterface::estimateLight() {
     // The first three components are color scaling factors.
     // The last one is the average pixel intensity in gamma space.
     float color_correction[4] = {1.f, 1.f, 1.f, 1.f};
+    float light_env_hdr_main_light_direction[3] = {1.f, 1.f, 1.f};
+    float light_env_hdr_main_light_intensity[3] = {1.f, 1.f, 1.f};
     if (ar_light_estimate_state == AR_LIGHT_ESTIMATE_STATE_VALID) {
         ArLightEstimate_getColorCorrection(m_ar_session, ar_light_estimate,
                                         color_correction);
+        m_color_correction = Vector4(m_color_correction[0], m_color_correction[1], m_color_correction[2], m_color_correction[3]);
+
+        ArLightEstimate_getEnvironmentalHdrMainLightDirection(m_ar_session, ar_light_estimate, light_env_hdr_main_light_direction);
+        m_light_env_hdr_main_light_direction = Vector3(m_light_env_hdr_main_light_direction[0], m_light_env_hdr_main_light_direction[1], m_light_env_hdr_main_light_direction[2]);
+
+        ArLightEstimate_getEnvironmentalHdrMainLightIntensity(m_ar_session, ar_light_estimate, light_env_hdr_main_light_intensity);
+        m_light_env_hdr_main_light_intensity = Vector3(m_light_env_hdr_main_light_intensity[0], m_light_env_hdr_main_light_intensity[1], m_light_env_hdr_main_light_intensity[2]);
     }
 
     ArLightEstimate_destroy(ar_light_estimate);
     ar_light_estimate = nullptr;
-}
-
-godot::Transform3D glm_to_godot_transform(const glm::mat4& glm_matrix) {
-    // Extract the basis (3x3 part)
-    godot::Basis basis(
-        glm_matrix[0][0], glm_matrix[1][0], glm_matrix[2][0],
-        glm_matrix[0][1], glm_matrix[1][1], glm_matrix[2][1],
-        glm_matrix[0][2], glm_matrix[1][2], glm_matrix[2][2]
-    );
-
-    // Extract the origin (translation part)
-    godot::Vector3 origin(
-        glm_matrix[3][0],
-        glm_matrix[3][1],
-        glm_matrix[3][2]
-    );
-
-    // Create the Transform
-    return godot::Transform3D(basis, origin);
-}
-
-godot::Projection glm_to_godot_projection(const glm::mat4& glm_matrix) 
-{
-    // Create a godot::Projection from the glm::mat4
-    godot::Projection godot_projection;
-
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            godot_projection[i][j] = glm_matrix[i][j];
-        }
-    }
-
-    return godot_projection;
 }
 
 godot::XRInterface::TrackingStatus ar_tracking_state_to_tracking_status(const ArSession& p_ar_session, const ArCamera& p_ar_camera, const ArTrackingState& p_camera_tracking_state) 
@@ -513,7 +672,12 @@ void ARCoreInterface::_process()
         return;
     }
 
-    handleScreenOrientationChanges();
+    // handleScreenOrientationChanges();
+    if (m_vertical_orientation) {
+        ArSession_setDisplayGeometry(m_ar_session, (int32_t)(Orientation::ROTATION_0), m_height, m_width);
+    } else {
+        ArSession_setDisplayGeometry(m_ar_session, (int32_t)(Orientation::ROTATION_90), m_height, m_width);
+    }
 
     ArSession_setCameraTextureName(m_ar_session,
                                  m_background_renderer.getTextureId());
@@ -542,8 +706,11 @@ void ARCoreInterface::_process()
     glm::mat4 view_mat;
     ArCamera_getViewMatrix(m_ar_session, ar_camera, glm::value_ptr(view_mat));
 
-    // TODO: We may need to adjust this based on orientation
     m_view = glm_to_godot_transform(view_mat);
+    // We need to adjust this based on orientation
+    if(m_vertical_orientation) {
+        m_view.rotate(godot::Vector3(0.f, 0.f, 1.f), 3.1415f * 0.5f);
+    }
 
     // invert our view matrix
     m_view.invert();
@@ -553,14 +720,14 @@ void ARCoreInterface::_process()
         m_head->set_pose("default", m_view, Vector3(), Vector3(), XRPose::XR_TRACKING_CONFIDENCE_HIGH);
     }
 
-    glm::mat4 projection_mat;
+    glm::mat4 projection_mat = glm::mat4(1.0f);
     ArCamera_getProjectionMatrix(m_ar_session, ar_camera,
                                 /*near=*/0.1f, /*far=*/100.f,
                                 glm::value_ptr(projection_mat));
 
     m_projection = glm_to_godot_projection(projection_mat);
 
-    m_background_renderer.draw(*m_ar_session, *m_ar_frame, m_depthColorVisualizationEnabled);
+    m_background_renderer.process(*m_ar_session, *m_ar_frame, m_enable_depth_estimation);
     
     ArTrackingState camera_m_tracking_state;
     ArCamera_getTrackingState(m_ar_session, ar_camera, &camera_m_tracking_state);
@@ -574,45 +741,26 @@ void ARCoreInterface::_process()
         return;
     }
 
-    int32_t is_depth_supported = 0;
-    ArSession_isDepthModeSupported(m_ar_session, AR_DEPTH_MODE_AUTOMATIC,
-                                 &is_depth_supported);
-
-    if (is_depth_supported && m_enable_depth_estimation) {
-        godot::Ref<godot::CameraFeed> feed = m_background_renderer.getFeed();
-
-        ArImage* depthImage = nullptr;
-        if (ArFrame_acquireDepthImage16Bits(m_ar_session, m_ar_frame, &depthImage) != AR_SUCCESS) {
-            ALOGE("Godot ARCore: Error: Failed to acquire depth image");
-            return;
-        }
-
-        int32_t width, height;
-        ArImage_getWidth(m_ar_session, depthImage, &width);
-        ArImage_getHeight(m_ar_session, depthImage, &height);
-
-        const uint8_t* depthData = nullptr;
-        int32_t depthDataSize = 0;
-        ArImage_getPlaneData(m_ar_session, depthImage, 0, reinterpret_cast<const uint8_t**>(&depthData), &depthDataSize);
-
-        PackedByteArray array;
-        array.resize(width*height*2); // 2 bytes per pixel (16-bit)
-
-        for (int i = 0; i < width * height * 2; ++i) {
-            array[i] = *(depthData + i*sizeof(uint8_t));
-        }
-
-        ArImage_release(depthImage);
-
-        feed->set_external_depthmap(array, width, height);
+    if (m_enable_light_estimation) {
+        estimateLight();
     }
 
-    estimateLight();
-
-    if (m_enable_plane_detection) {
-        m_plane_renderer.draw(*m_ar_session);
+    if (m_enable_vertical_plane_detection || m_enable_horizontal_plane_detection) {
+        m_plane_renderer.process(*m_ar_session);
     } else {
         m_plane_renderer.clear();
+    }
+
+    if (m_enable_images_detection) {
+        m_instances_renderer.process(*m_ar_session);
+    } else {
+        m_instances_renderer.clear();
+    }
+
+    if (m_enable_point_cloud_detection) {
+        m_point_cloud_renderer.process(*m_ar_session);
+    } else {
+        m_point_cloud_renderer.clear();
     }
     
     //! Maxime: see what this is 
@@ -676,39 +824,39 @@ void ARCoreInterface::notification(int p_what)
     }
 }
 
-bool ARCoreInterface::isDepthSupported()
-{
-  int32_t is_supported = 0;
-  ArSession_isDepthModeSupported(m_ar_session, AR_DEPTH_MODE_AUTOMATIC,
-                                 &is_supported);
-  return is_supported;
-}
-
 void ARCoreInterface::configureSession()
 {     
-  const bool is_depth_supported = isDepthSupported();
+    ArConfig* ar_config = nullptr;
+    ArConfig_create(m_ar_session, &ar_config);
+    if (is_depth_supported() && m_enable_depth_estimation) {
+        ArConfig_setDepthMode(m_ar_session, ar_config, AR_DEPTH_MODE_AUTOMATIC);
+    } else {
+        ArConfig_setDepthMode(m_ar_session, ar_config, AR_DEPTH_MODE_DISABLED);
+    }
 
-  ArConfig* ar_config = nullptr;
-  ArConfig_create(m_ar_session, &ar_config);
-  if (is_depth_supported && m_enable_depth_estimation) {
-    ArConfig_setDepthMode(m_ar_session, ar_config, AR_DEPTH_MODE_AUTOMATIC);
-  } else {
-    ArConfig_setDepthMode(m_ar_session, ar_config, AR_DEPTH_MODE_DISABLED);
-  }
+    if (m_enable_instant_placement) {
+        ArConfig_setInstantPlacementMode(m_ar_session, ar_config,
+                                        AR_INSTANT_PLACEMENT_MODE_LOCAL_Y_UP);
+    } else {
+        ArConfig_setInstantPlacementMode(m_ar_session, ar_config,
+                                        AR_INSTANT_PLACEMENT_MODE_DISABLED);
+    }
 
-//! Maxime : todo ?
-//   if (m_is_instant_placement_enabled) {
-//     ArConfig_setInstantPlacementMode(m_ar_session, ar_config,
-//                                      AR_INSTANT_PLACEMENT_MODE_LOCAL_Y_UP);
-//   } else {
-//     ArConfig_setInstantPlacementMode(m_ar_session, ar_config,
-//                                      AR_INSTANT_PLACEMENT_MODE_DISABLED);
-//   }
+    if (m_enable_vertical_plane_detection && m_enable_horizontal_plane_detection) {
+        ArConfig_setPlaneFindingMode(m_ar_session, ar_config, AR_PLANE_FINDING_MODE_HORIZONTAL_AND_VERTICAL);
+    } else if (m_enable_vertical_plane_detection) {
+        ArConfig_setPlaneFindingMode(m_ar_session, ar_config, AR_PLANE_FINDING_MODE_VERTICAL);
 
-  ERR_FAIL_NULL(ar_config);
-  ERR_FAIL_COND(ArSession_configure(m_ar_session, ar_config) == AR_SUCCESS);
-  ArConfig_destroy(ar_config);
+    } else if (m_enable_horizontal_plane_detection) {
+        ArConfig_setPlaneFindingMode(m_ar_session, ar_config, AR_PLANE_FINDING_MODE_HORIZONTAL);
 
+    } else {
+        ArConfig_setPlaneFindingMode(m_ar_session, ar_config, AR_PLANE_FINDING_MODE_DISABLED);
+    }
+
+    ERR_FAIL_NULL(ar_config);
+    ERR_FAIL_COND(ArSession_configure(m_ar_session, ar_config) == AR_SUCCESS);
+    ArConfig_destroy(ar_config);
 }
 
 //! Maxime what about this ?

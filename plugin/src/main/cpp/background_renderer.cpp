@@ -1,5 +1,6 @@
 #include "background_renderer.h"
 #include <godot_cpp/classes/camera_server.hpp>
+#include "include/arcore_c_api.h"
 #include "utils.h"
 
 using namespace arcore_plugin;
@@ -57,7 +58,40 @@ void BackgroundRenderer::uninitialize()
     }
 }
 
-void BackgroundRenderer::draw(ArSession& p_ar_session, const ArFrame& p_ar_frame, bool p_depthColorVisualizationEnabled)
+void computeDepth(ArSession& p_ar_session, const ArFrame& p_ar_frame, godot::Ref<godot::CameraFeed> p_feed) {
+    int32_t is_depth_supported = 0;
+    ArSession_isDepthModeSupported(&p_ar_session, AR_DEPTH_MODE_AUTOMATIC,
+                                 &is_depth_supported);
+
+    if (is_depth_supported) {
+        ArImage* depthImage = nullptr;
+        if (ArFrame_acquireDepthImage16Bits(&p_ar_session, &p_ar_frame, &depthImage) != AR_SUCCESS) {
+            ALOGE("Godot ARCore: Error: Failed to acquire depth image");
+            return;
+        }
+
+        int32_t width, height;
+        ArImage_getWidth(&p_ar_session, depthImage, &width);
+        ArImage_getHeight(&p_ar_session, depthImage, &height);
+
+        const uint8_t* depthData = nullptr;
+        int32_t depthDataSize = 0;
+        ArImage_getPlaneData(&p_ar_session, depthImage, 0, reinterpret_cast<const uint8_t**>(&depthData), &depthDataSize);
+
+        PackedByteArray array;
+        array.resize(width*height*2); // 2 bytes per pixel (16-bit)
+
+        for (int i = 0; i < width * height * 2; ++i) {
+            array[i] = *(depthData + i*sizeof(uint8_t));
+        }
+
+        ArImage_release(depthImage);
+
+        p_feed->set_external_depthmap(array, width, height);
+    }
+}
+
+void BackgroundRenderer::process(ArSession& p_ar_session, const ArFrame& p_ar_frame, bool p_enable_depth_estimation)
 {
     // Have ARCore grab a camera frame, load it into our texture object and do its funky SLAM logic
     ArSession_setCameraTextureName(&p_ar_session, m_camera_texture_id);
@@ -116,4 +150,7 @@ void BackgroundRenderer::draw(ArSession& p_ar_session, const ArFrame& p_ar_frame
     //     m_feed->set_transform(display_transform);
     // }
 
+    if (p_enable_depth_estimation) {
+        computeDepth(p_ar_session, p_ar_frame, m_feed);
+    }
 }

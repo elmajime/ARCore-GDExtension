@@ -3,6 +3,11 @@
 
 #include <android/log.h>
 #include <godot_cpp/variant/string.hpp>
+#include "godot_cpp/variant/projection.hpp"
+#include "godot_cpp/variant/transform3d.hpp"
+#include "godot_cpp/variant/vector3.hpp"
+#include "godot_cpp/variant/vector4.hpp"
+#include "glm.hpp"
 #include <jni.h>
 
 #define LOG_TAG "ARCoreGDExtension"
@@ -60,7 +65,7 @@
 * @param env JNI environment instance.
 * @return Godot string instance.
 */
-static inline godot::String jstring_to_string(JNIEnv *env, jstring source) {
+inline godot::String jstring_to_string(JNIEnv *env, jstring source) {
     if (env && source) {
         const char *const source_utf8 = env->GetStringUTFChars(source, NULL);
         if (source_utf8) {
@@ -70,6 +75,47 @@ static inline godot::String jstring_to_string(JNIEnv *env, jstring source) {
         }
     }
     return godot::String();
+}
+
+inline godot::Transform3D glm_to_godot_transform(const glm::mat4& glm_matrix) {
+    // // Extract the basis (3x3 part)
+    // godot::Basis basis(
+    //     glm_matrix[0][0], glm_matrix[1][0], glm_matrix[2][0],
+    //     glm_matrix[0][1], glm_matrix[1][1], glm_matrix[2][1],
+    //     glm_matrix[0][2], glm_matrix[1][2], glm_matrix[2][2]
+    // );
+
+    // // Extract the origin (translation part)
+    // godot::Vector3 origin(
+    //     glm_matrix[3][0],
+    //     glm_matrix[3][1],
+    //     glm_matrix[3][2]
+    // );
+
+    // Create the Transform
+    // return godot::Transform3D(basis, origin);
+
+	// Transform3D(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz);
+    godot::Transform3D res(godot::Vector3(glm_matrix[0][0], glm_matrix[0][1], glm_matrix[0][2]), 
+                           godot::Vector3(glm_matrix[1][0], glm_matrix[1][1], glm_matrix[1][2]), 
+                           godot::Vector3(glm_matrix[2][0], glm_matrix[2][1], glm_matrix[2][2]), 
+                           godot::Vector3(glm_matrix[3][0], glm_matrix[3][1], glm_matrix[3][2]));
+
+    return res;
+}
+
+inline godot::Projection glm_to_godot_projection(const glm::mat4& glm_matrix) 
+{
+    // Create a godot::Projection from the glm::mat4
+    godot::Projection godot_projection;
+
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            godot_projection[i][j] = glm_matrix[i][j];
+        }
+    }
+
+    return godot_projection;
 }
 
 #endif // UTILS_H

@@ -15,6 +15,8 @@
 
 #include "background_renderer.h"
 #include "plane_renderer.h"
+#include "instances_renderer.h"
+#include "point_cloud_renderer.h"
 
 namespace godot {
     class ARCoreInterface : public XRInterfaceExtension {
@@ -68,11 +70,25 @@ namespace godot {
         virtual void notification(int p_what);
 
         void enable_depth_estimation(bool p_enable);
+        bool is_depth_supported();
         void show_depth_map(bool p_enable);
-        void enable_plane_detection(bool p_enable);
-        void set_depth_color_mapping(float p_mid_depth_meters, float p_max_depth_meters);
+        void set_max_depth_meters(float p_max_depth_meters);
+        void enable_vertical_plane_detection(bool p_enable);
+        void enable_horizontal_plane_detection(bool p_enable);
+        void enable_instant_placement(bool p_enable);
+        godot::Transform3D getHitPose(float p_pixel_x, float p_pixel_y, float p_approximate_distance_meters);
+        godot::Transform3D getHitRayPose(const godot::Vector3& p_origin, const godot::Vector3& p_direction);
+        void enable_images_detection(bool p_enable);
+        void set_node_images_mapping(const godot::Dictionary& in_nodeImagesMap);
+        void enable_point_cloud_detection(bool p_enable);
+        void switch_orientation(bool p_vertical);
+        void enable_light_estimation(bool p_enable);
+        godot::Vector4 get_light_color_correction();
+        godot::Vector3 get_light_main_hdr_direction();
+        godot::Vector3 get_light_main_hdr_intensity();
 
-        bool isDepthSupported();
+        float getNear() {return m_z_near;}
+        float getFar() {return m_z_far;}
 
     private:
         enum class Orientation: int32_t {
@@ -85,6 +101,8 @@ namespace godot {
 
         arcore_plugin::BackgroundRenderer m_background_renderer;
         arcore_plugin::PlaneRenderer m_plane_renderer;
+        arcore_plugin::InstancesRenderer m_instances_renderer;
+        arcore_plugin::PointCloudRenderer m_point_cloud_renderer;
 
         InitStatus m_init_status;
 
@@ -111,10 +129,17 @@ namespace godot {
 
         int32_t m_plane_count;
 
-        bool m_depthColorVisualizationEnabled;
         bool m_enable_depth_estimation;
-        bool m_enable_plane_detection;
-        bool m_is_instant_placement_enabled;
+        bool m_enable_vertical_plane_detection;
+        bool m_enable_horizontal_plane_detection;
+        bool m_enable_instant_placement;
+        bool m_enable_images_detection;
+        bool m_enable_point_cloud_detection;
+        bool m_enable_light_estimation;
+        bool m_vertical_orientation;
+        godot::Vector4 m_color_correction;
+        godot::Vector3 m_light_env_hdr_main_light_direction;
+        godot::Vector3 m_light_env_hdr_main_light_intensity;
 
         // void make_anchors_stale();
 

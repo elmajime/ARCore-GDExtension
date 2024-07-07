@@ -9,6 +9,10 @@
 #include <vector>
 
 #include "utils.h"
+#include "ar_utils.h"
+
+#include "glm.hpp"
+#include "gtc/type_ptr.hpp"
 
 using namespace arcore_plugin;
 using namespace godot;
@@ -46,11 +50,20 @@ std::vector<float> get_plane_boundary(ArSession* ar_session, ArPlane* ar_plane) 
     return polygon;
 }
 
-ArPose* get_plane_center_pose(ArSession* ar_session, ArPlane* ar_plane) {
-    ArPose* center_pose;
-    ArPose_create(ar_session, nullptr, &center_pose);
-    ArPlane_getCenterPose(ar_session, ar_plane, center_pose);
-    return center_pose;
+glm::quat get_plane_rotation(ArSession* ar_session, ArPose* plane_pose) {
+    float plane_pose_raw[7] = {0.f};
+    ArPose_getPoseRaw(ar_session, plane_pose, plane_pose_raw);
+    glm::quat plane_quaternion(plane_pose_raw[3], plane_pose_raw[0],
+                                plane_pose_raw[1], plane_pose_raw[2]);
+    // Get normal vector, normal is defined to be positive Y-position in local
+    // frame.
+    return plane_quaternion;
+}
+
+glm::vec3 get_plane_normal(ArSession* ar_session, ArPose* plane_pose) {
+  // Get normal vector, normal is defined to be positive Y-position in local
+  // frame.
+  return get_plane_rotation(ar_session, plane_pose) * glm::vec3(0.f, 1.f, 0.f);
 }
 
 // Function to convert the boundary points to Godot vertices
@@ -80,23 +93,6 @@ Array convert_boundary_to_vertices(const std::vector<float>& boundary) {
 //     return mesh_instance;
 // }
 
-Transform3D ar_pose_to_godot_transform(ArSession* ar_session, ArPose* ar_pose) {
-    float pose_raw[7];  // The ARCore pose is represented by a 7-element array (quaternion and translation)
-    ArPose_getPoseRaw(ar_session, ar_pose, pose_raw);
-
-    // ARCore provides a quaternion (x, y, z, w) and translation (x, y, z)
-    Quaternion rotation(pose_raw[0], pose_raw[1], pose_raw[2], pose_raw[3]);
-    Quaternion tweaking_rotation(Vector3(1.f, 0.f, 0.f), 3.14f/2);
-    Vector3 translation(pose_raw[4], pose_raw[5], pose_raw[6]);
-
-    Transform3D transform;
-    transform.origin = translation;
-    // transform.basis = Basis(tweaking_rotation * rotation);
-    transform.basis = Basis(tweaking_rotation);
-
-    return transform;
-}
-
 CSGPolygon3D* create_csg_polygon(const Array& vertices)
 {
     CSGPolygon3D* csg_polygon = memnew(CSGPolygon3D);
@@ -119,14 +115,23 @@ void PlaneRenderer::remove_plane_node(const size_t& plane_guid) {
 // Function to update the CSGPolygon3D node of a tracked plane
 void PlaneRenderer::update_or_create_plane_node(const size_t& plane_guid, ArSession* ar_session, ArPlane* ar_plane, const std::vector<float> &boundary) {
     Array vertices = convert_boundary_to_vertices(boundary);
+    ScopedArPose scopedArPose(ar_session);
     if (m_plane_nodes.find(plane_guid) != m_plane_nodes.end()) {
         // Plane node found, update its position and shape
         CSGPolygon3D* polygon_node = m_plane_nodes[plane_guid];
 
         polygon_node->set_polygon(vertices);
 
-        ArPose* center_pose = get_plane_center_pose(ar_session, ar_plane);
-        Transform3D transform = ar_pose_to_godot_transform(ar_session, center_pose);
+        ArPlane_getCenterPose(ar_session, ar_plane, scopedArPose.GetArPose());
+
+        glm::mat4 mat = glm::mat4(1.0f);
+        ArPose_getMatrix(ar_session, scopedArPose.GetArPose(), glm::value_ptr(mat));
+        Transform3D transform;
+        
+        // CSGPloygons are aligned on the XY axis while ARPlanes are aligned on the XZ axis
+        transform.rotate(Vector3(1.f, 0.f, 0.f), glm::radians(90.f));
+        transform = glm_to_godot_transform(mat) * transform;
+
         polygon_node->set_transform(transform);
     } 
     else
@@ -134,10 +139,15 @@ void PlaneRenderer::update_or_create_plane_node(const size_t& plane_guid, ArSess
         CSGPolygon3D* polygon_node = create_csg_polygon(vertices);
 
         // Get the center pose of the plane
-        ArPose* center_pose = get_plane_center_pose(ar_session, ar_plane);
-        Transform3D transform = ar_pose_to_godot_transform(ar_session, center_pose);
+        ArPlane_getCenterPose(ar_session, ar_plane, scopedArPose.GetArPose());
+        glm::mat4 mat = glm::mat4(1.0f);
+        ArPose_getMatrix(ar_session, scopedArPose.GetArPose(), glm::value_ptr(mat));
+        Transform3D transform;
 
-        // Apply the transform to the CSGPolygon3D node
+        // CSGPloygons are aligned on the XY axis while ARPlanes are aligned on the XZ axis
+        transform.rotate(Vector3(1.f, 0.f, 0.f), glm::radians(90.f));
+        transform = glm_to_godot_transform(mat) * transform;
+
         polygon_node->set_transform(transform);
 
         m_planes_node->add_child(polygon_node);
@@ -178,7 +188,7 @@ size_t get_uid(ArSession* ar_session, const std::vector<float> &boundary)
     return boundary_hash;
 }
 
-void PlaneRenderer::draw(ArSession& p_ar_session)
+void PlaneRenderer::process(ArSession& p_ar_session)
 {
     if (m_planes_node == nullptr) {
         m_planes_node = new Node();

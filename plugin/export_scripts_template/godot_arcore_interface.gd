@@ -20,21 +20,53 @@ func start_ar():
 	else:
 		print("Interface was not instantiated")
 
-func enable_depth_estimation(enable):
+func enable_depth_estimation(toggled):
 	if arcore_interface:
-		arcore_interface.enable_depth_estimation(enable)
+		arcore_interface.enable_depth_estimation(toggled)
 
-func show_depth_map(enable):
+func show_depth_map(toggled):
 	if arcore_interface:
-		arcore_interface.show_depth_map(enable)
+		arcore_interface.show_depth_map(toggled)
 
-func set_depth_color_mapping(mid_depth_meters, max_depth_meters):
+func set_max_depth_meters(value):
 	if arcore_interface:
-		arcore_interface.set_depth_color_mapping(mid_depth_meters, max_depth_meters)
+		arcore_interface.set_max_depth_meters(value)
 
-func enable_plane_detection(enable):
+func enable_vertical_plane_detection(toggled):
 	if arcore_interface:
-		arcore_interface.enable_plane_detection(enable)
+		arcore_interface.enable_vertical_plane_detection(toggled)
+
+func enable_horizontal_plane_detection(toggled):
+	if arcore_interface:
+		arcore_interface.enable_horizontal_plane_detection(toggled)
+
+func enable_images_detection(toggled):
+	if arcore_interface:
+		arcore_interface.enable_images_detection(toggled)
+
+func enable_instant_placement(toggled):
+	if arcore_interface:
+		arcore_interface.enable_instant_placement(toggled)
+
+func enable_light_estimation(toggled):
+	if arcore_interface:
+		arcore_interface.enable_light_estimation(toggled)
+
+func enable_point_cloud_detection(toggled):
+	if arcore_interface:
+		arcore_interface.enable_light_estimation(toggled)
+
+func switch_orientation(vertical):
+	if arcore_interface:
+		arcore_interface.switch_orientation(vertical)
+
+func get_light_main_hdr_direction():
+	if arcore_interface:
+		return arcore_interface.get_light_main_hdr_direction()
+
+func get_light_main_hdr_intensity():
+	if arcore_interface:
+		return arcore_interface.get_light_main_hdr_intensity()
 		
 func _enter_tree():
 	arcore_interface = ARCoreInterface.new()

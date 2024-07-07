@@ -17,7 +17,7 @@ namespace arcore_plugin
         void initialize();
 
         void clear();
-        void draw(ArSession& p_ar_session);
+        void process(ArSession& p_ar_session);
 
         private:
         godot::Node* m_planes_node {nullptr};

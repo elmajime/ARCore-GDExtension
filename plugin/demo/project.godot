@@ -19,6 +19,11 @@ config/icon="res://Godot_ARCoreExample.png"
 
 ARCoreGDExtension="*res://addons/ARCoreGDExtension/godot_arcore_interface.gd"
 
+[display]
+
+window/size/mode=3
+window/size/resizable=false
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/ARCoreGDExtension/plugin.cfg")

@@ -15,13 +15,14 @@ namespace arcore_plugin
 
         void uninitialize();
 
-        void draw(ArSession& p_ar_session, const ArFrame& p_ar_frame, bool p_depthColorVisualizationEnabled);
+        void process(ArSession& p_ar_session, const ArFrame& p_ar_frame, bool p_enable_depth_estimation);
 
         int64_t getTextureId() const {return m_camera_texture_id;}
 
         godot::Ref<godot::CameraFeed> getFeed() const {return m_feed;}
 
         private:
+
         godot::Ref<godot::CameraFeed> m_feed;
 
         int64_t m_camera_texture_id;

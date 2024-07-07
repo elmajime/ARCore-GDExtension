@@ -1,8 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://b0n6vtr0gl6l3"]
+[gd_scene load_steps=13 format=3 uid="uid://b0n6vtr0gl6l3"]
 
 [ext_resource type="Script" path="res://MeshInstance3D.gd" id="1_0ufg4"]
 [ext_resource type="Script" path="res://main3D.gd" id="1_a4ilg"]
 [ext_resource type="PackedScene" uid="uid://cglxfqvt03e63" path="res://ui.tscn" id="3_rflmv"]
+[ext_resource type="PackedScene" uid="uid://buvglodslohhq" path="res://ruler.blend" id="4_qfgab"]
 
 [sub_resource type="Environment" id="Environment_p5o4h"]
 background_mode = 5
@@ -38,7 +39,7 @@ script = ExtResource("1_a4ilg")
 
 [node name="Camera3D" type="Camera3D" parent="Origin3D"]
 environment = SubResource("Environment_p5o4h")
-far = 1.99
+far = 10.23
 
 [node name="Pink" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.295, -0.995)
@@ -60,7 +61,16 @@ mesh = SubResource("PrismMesh_kr2qi")
 
 [node name="Node2D" parent="." instance=ExtResource("3_rflmv")]
 
+[node name="ruler" parent="." instance=ExtResource("4_qfgab")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01, -0.575, -1)
+
 [connection signal="estimate_depthmap_toggled" from="Node2D" to="." method="_on_node_2d_estimate_depthmap_toggled"]
 [connection signal="far_changed" from="Node2D" to="." method="_on_node_2d_far_changed"]
-[connection signal="planes_toggled" from="Node2D" to="." method="_on_node_2d_planes_toggled"]
+[connection signal="horizontal_planes_toggled" from="Node2D" to="." method="_on_node_2d_horizontal_planes_toggled"]
+[connection signal="images_detection_toggled" from="Node2D" to="." method="_on_node_2d_images_detection_toggled"]
+[connection signal="instant_placement_toggled" from="Node2D" to="." method="_on_node_2d_instant_placement_toggled"]
+[connection signal="light_estimation_toggled" from="Node2D" to="." method="_on_node_2d_light_estimation_toggled"]
+[connection signal="point_cloud_detection_toggled" from="Node2D" to="." method="_on_node_2d_point_cloud_detection_toggled"]
 [connection signal="show_depthmap_toggled" from="Node2D" to="." method="_on_node_2d_show_depthmap_toggled"]
+[connection signal="switch_orientation" from="Node2D" to="." method="_on_node_2d_switch_orientation"]
+[connection signal="vertical_planes_toggled" from="Node2D" to="." method="_on_node_2d_vertical_planes_toggled"]

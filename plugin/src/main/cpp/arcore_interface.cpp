@@ -846,10 +846,10 @@ void ARCoreInterface::configureSession()
         ArConfig_setPlaneFindingMode(m_ar_session, ar_config, AR_PLANE_FINDING_MODE_HORIZONTAL_AND_VERTICAL);
     } else if (m_enable_vertical_plane_detection) {
         ArConfig_setPlaneFindingMode(m_ar_session, ar_config, AR_PLANE_FINDING_MODE_VERTICAL);
-
     } else if (m_enable_horizontal_plane_detection) {
         ArConfig_setPlaneFindingMode(m_ar_session, ar_config, AR_PLANE_FINDING_MODE_HORIZONTAL);
-
+    } else if (m_enable_light_estimation) {
+        ArConfig_setLightEstimationMode(m_ar_session, ar_config, AR_LIGHT_ESTIMATION_MODE_ENVIRONMENTAL_HDR); // Warning: not available with front facing camera
     } else {
         ArConfig_setPlaneFindingMode(m_ar_session, ar_config, AR_PLANE_FINDING_MODE_DISABLED);
     }

@@ -131,7 +131,7 @@ void ARCoreInterface::show_depth_map(bool p_enable)
     if (m_enable_depth_estimation) {
         godot::Ref<godot::CameraFeed> feed = m_background_renderer.getFeed();
         if (feed.is_valid()) {
-            feed->set_should_display_depthmap(p_enable);
+            // feed->set_should_display_depthmap(p_enable);
         }
     } else {
         ALOGW("Godot ARCore: show_depth_map called but depth estimation is not enabled");
@@ -144,7 +144,7 @@ void ARCoreInterface::set_max_depth_meters(float p_max_depth_meters)
         godot::Ref<godot::CameraFeed> feed = m_background_renderer.getFeed();
         if (feed.is_valid())
         {
-            feed->set_max_depth_meters(p_max_depth_meters);
+            // feed->set_max_depth_meters(p_max_depth_meters);
         }
     } else {
         ALOGW("Godot ARCore: set_max_depth_meters called but depth estimation is not enabled");
@@ -855,7 +855,7 @@ void ARCoreInterface::configureSession()
     }
 
     ERR_FAIL_NULL(ar_config);
-    ERR_FAIL_COND(ArSession_configure(m_ar_session, ar_config) == AR_SUCCESS);
+    ERR_FAIL_COND(ArSession_configure(m_ar_session, ar_config) != AR_SUCCESS);
     ArConfig_destroy(ar_config);
 }
 

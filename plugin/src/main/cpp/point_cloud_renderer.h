@@ -18,7 +18,7 @@ namespace arcore_plugin
         void process(ArSession& p_ar_session);
 
         private:
-        godot::Node* m_point_cloud_node {nullptr};
+        // godot::Node* m_point_cloud_node {nullptr};
 
     };
 } // namespace arcore_plugin

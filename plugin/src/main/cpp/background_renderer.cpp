@@ -87,7 +87,7 @@ void computeDepth(ArSession& p_ar_session, const ArFrame& p_ar_frame, godot::Ref
 
         ArImage_release(depthImage);
 
-        p_feed->set_external_depthmap(array, width, height);
+        // p_feed->set_external_depthmap(array, width, height);
     }
 }
 
@@ -96,18 +96,18 @@ void BackgroundRenderer::process(ArSession& p_ar_session, const ArFrame& p_ar_fr
     // Have ARCore grab a camera frame, load it into our texture object and do its funky SLAM logic
     ArSession_setCameraTextureName(&p_ar_session, m_camera_texture_id);
 
-    // Positions of the quad vertices in clip space (X, Y).
-    static const float kVertices[] = {
-            //	-1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, +1.0f, +1.0f,
-            0.0f,
-            0.0f,
-            1.0f,
-            0.0f,
-            0.0f,
-            1.0f,
-            1.0f,
-            1.0f,
-    };
+    // // Positions of the quad vertices in clip space (X, Y).
+    // static const float kVertices[] = {
+    //         //	-1.0f, -1.0f, +1.0f, -1.0f, -1.0f, +1.0f, +1.0f, +1.0f,
+    //         0.0f,
+    //         0.0f,
+    //         1.0f,
+    //         0.0f,
+    //         0.0f,
+    //         1.0f,
+    //         1.0f,
+    //         1.0f,
+    // };
     // //! Maxime : do we need that ?
     // // If display rotation changed (also includes view size change), we need to
     // // re-query the uv coordinates for the on-screen portion of the camera image.

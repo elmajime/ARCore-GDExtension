@@ -191,7 +191,7 @@ size_t get_uid(ArSession* ar_session, const std::vector<float> &boundary)
 void PlaneRenderer::process(ArSession& p_ar_session)
 {
     if (m_planes_node == nullptr) {
-        m_planes_node = new Node();
+        m_planes_node = memnew(Node);
         m_planes_node->set_name("ARPlanes_node");
         get_root_node()->add_child(m_planes_node);
     }
@@ -265,6 +265,7 @@ void PlaneRenderer::process(ArSession& p_ar_session)
 void PlaneRenderer::clear() {
     if (get_root_node() && m_planes_node != nullptr) {
         get_root_node()->remove_child(m_planes_node);
+        memdelete(m_planes_node);
         m_planes_node = nullptr;
     }
 }

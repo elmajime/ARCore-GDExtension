@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://MeshInstance3D.gd" id="1_0ufg4"]
 [ext_resource type="Script" path="res://main3D.gd" id="1_a4ilg"]
 [ext_resource type="PackedScene" uid="uid://cglxfqvt03e63" path="res://ui.tscn" id="3_rflmv"]
-[ext_resource type="PackedScene" uid="uid://buvglodslohhq" path="res://ruler.blend" id="4_qfgab"]
+[ext_resource type="PackedScene" uid="uid://cb26lopdx85mb" path="res://ruler.blend" id="4_qfgab"]
 
 [sub_resource type="Environment" id="Environment_p5o4h"]
 background_mode = 5

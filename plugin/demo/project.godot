@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Godot_ARCore_example"
 run/main_scene="res://main3D.tscn"
-config/features=PackedStringArray("4.2", "GL Compatibility")
+config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://Godot_ARCoreExample.png"
 
 [autoload]
